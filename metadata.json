@@ -1,0 +1,8 @@
+{
+  "name": "Coffutino - Specialty Coffee Roasters",
+  "description": "Поръчайте прясно изпечено специално кафе Coffutino. 7 подбрани сорта в опаковки от 250г и 1кг, индивидуално смилане и избор на дата за доставка.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
