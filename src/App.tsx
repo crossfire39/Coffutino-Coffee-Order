@@ -16,6 +16,7 @@ import { CartView } from './components/CartView';
 import { CheckoutModal } from './components/CheckoutModal';
 import { OrderConfirmationModal } from './components/OrderConfirmationModal';
 import { OrdersHistoryView } from './components/OrdersHistoryView';
+import { PWAInstallButton } from './components/PWAInstallButton';
 import { Calendar, Coffee, Flame, ExternalLink } from 'lucide-react';
 
 export default function App() {
@@ -265,6 +266,9 @@ export default function App() {
       <main className="flex-1">
         {activeTab === 'sorts' && (
           <div className="p-4 space-y-4 pb-24">
+            {/* Банер за PWA инсталиране над снимката */}
+            <PWAInstallButton variant="banner" />
+
             {/* Начален банер на пекарната - Димо Петков */}
             <div className="relative rounded-2xl overflow-hidden border border-stone-800 bg-[#161413] shadow-xl">
               <img

@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShoppingBag } from 'lucide-react';
 import { COFFUTINO_LOGO } from '../data/coffeeData';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface TopNavbarProps {
   cartCount: number;
@@ -29,8 +30,11 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         </a>
       </div>
 
-      {/* Zone 2: Валута Евро и Количка */}
+      {/* Zone 2: Бутон за инсталиране, Валута Евро и Количка */}
       <div className="flex items-center gap-2 shrink-0">
+        {/* Бутон за PWA инсталация */}
+        <PWAInstallButton variant="navbar" />
+
         {/* Индикатор за валута в евро */}
         <span
           className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-stone-800/80 text-amber-300 border border-stone-700/60 font-mono shadow-sm"
