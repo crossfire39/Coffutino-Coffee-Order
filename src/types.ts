@@ -103,3 +103,19 @@ export interface OrderRecord {
   status: 'Планирано изпичане' | 'Прясно изпечено' | 'Предадено на Еконт' | 'Доставено' | string;
   customer: DeliveryDetails;
 }
+
+export interface CoffeeSubscription {
+  id: string;
+  subscriptionNumber: string;
+  createdAt: string;
+  status: 'active' | 'paused' | 'cancelled' | 'canceled';
+  preferredDispatchDay: string; // "1", "10", "15", "20", "first_monday"
+  items: CartItem[];
+  estimatedSubtotalEur: number;
+  estimatedTotalEur: number;
+  subtotalEur: number; // for type compatibility
+  totalEur: number; // for type compatibility
+  currency: 'EUR' | 'BGN';
+  customer: DeliveryDetails;
+}
+

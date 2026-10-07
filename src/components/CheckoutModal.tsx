@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { CartItem, OrderRecord } from '../types';
+import { CartItem, OrderRecord, CoffeeSubscription } from '../types';
 import { formatDateDisplay } from '../data/coffeeData';
 import { ROASTER_EMAIL } from '../utils/orderEmail';
-import { X, Check, Truck, Banknote, Building2, MapPin, User, Calendar, AlertCircle, Info, Mail, MessageSquare } from 'lucide-react';
+import { X, Check, Truck, Banknote, Building2, MapPin, User, Calendar, AlertCircle, Info, Mail, MessageSquare, Repeat, CalendarDays } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const WEBHOOK_URL = 'https://hook.us2.make.com/md2sgy9myjtgsveraprj0xiuj20hbyhj';
@@ -13,7 +13,9 @@ interface CheckoutModalProps {
   items: CartItem[];
   currency: 'EUR' | 'BGN';
   selectedDate: string;
-  onOrderPlaced: (order: OrderRecord) => void;
+  orderType: 'standard' | 'subscription';
+  preferredDispatchDay: string;
+  onOrderPlaced: (order: OrderRecord | CoffeeSubscription) => void;
 }
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
@@ -22,6 +24,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   items,
   currency,
   selectedDate,
+  orderType,
+  preferredDispatchDay,
   onOrderPlaced
 }) => {
   if (!isOpen) return null;
@@ -36,6 +40,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [econtOffice, setEcontOffice] = useState('');
   
   // ВЪЗМОЖНИ СА САМО ДВЕ: 1. Наложен платеж при получаване, 2. Банково плащане
+  // При абонамент е строго Наложен платеж съгл. изискванията на клиента (Payment will be strictly Cash on Delivery via Ekont upon receipt)
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'bank_transfer'>('cod');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,35 +68,70 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     setIsSubmitting(true);
     setFormError('');
 
-    const orderNum = `CFT-${Math.floor(10000 + Math.random() * 90000)}`;
+    const randomSuffix = Math.floor(10000 + Math.random() * 90000);
+    const orderNum = orderType === 'subscription' ? `SUB-${randomSuffix}` : `CFT-${randomSuffix}`;
 
-    const orderRecord: OrderRecord = {
-      id: String(Date.now()),
-      orderNumber: orderNum,
-      createdAt: new Date().toISOString(),
-      deliveryDate: selectedDate,
-      items: [...items],
-      subtotalEur,
-      shippingEur: 0,
-      totalEur: subtotalEur,
-      subtotalBgn,
-      shippingBgn: 0,
-      totalBgn: subtotalBgn,
-      currency,
-      status: 'Планирано изпичане',
-      customer: {
-        date: selectedDate,
-        deliveryType,
-        fullName,
-        phone,
-        email,
-        city,
-        address: deliveryType === 'courier' ? address : '',
-        econtOffice: deliveryType === 'econt_office' ? econtOffice : '',
-        specialInstructions: notes,
-        paymentMethod
-      }
+    const deliveryDetails = {
+      date: orderType === 'subscription' ? '' : selectedDate,
+      deliveryType,
+      fullName,
+      phone,
+      email,
+      city,
+      address: deliveryType === 'courier' ? address : '',
+      econtOffice: deliveryType === 'econt_office' ? econtOffice : '',
+      specialInstructions: notes,
+      paymentMethod: orderType === 'subscription' ? 'cod' : paymentMethod
     };
+
+    let recordToSend: any;
+
+    if (orderType === 'subscription') {
+      const subRecord: CoffeeSubscription = {
+        id: String(Date.now()),
+        subscriptionNumber: orderNum,
+        createdAt: new Date().toISOString(),
+        status: 'active',
+        preferredDispatchDay,
+        items: [...items],
+        estimatedSubtotalEur: subtotalEur,
+        estimatedTotalEur: subtotalEur,
+        subtotalEur,
+        totalEur: subtotalEur,
+        currency,
+        customer: deliveryDetails
+      };
+      recordToSend = {
+        ...subRecord,
+        orderType: "MONTHLY_RECURRING",
+        selectedCoffees: items.map(it => ({
+          coffeeName: it.coffeeName,
+          size: it.size === '250g' ? '250g' : '1kg',
+          beansOrGround: it.grind === 'whole_bean' ? 'На зърна' : 'Смляно',
+          grindType: it.grind === 'whole_bean' ? 'Несмяно (на зърна)' : it.grindName,
+          quantity: it.quantity,
+          price: (it.unitPriceEur * it.quantity).toFixed(2)
+        }))
+      };
+    } else {
+      const orderRecord: OrderRecord = {
+        id: String(Date.now()),
+        orderNumber: orderNum,
+        createdAt: new Date().toISOString(),
+        deliveryDate: selectedDate,
+        items: [...items],
+        subtotalEur,
+        shippingEur: 0,
+        totalEur: subtotalEur,
+        subtotalBgn,
+        shippingBgn: 0,
+        totalBgn: subtotalBgn,
+        currency,
+        status: 'Планирано изпичане',
+        customer: deliveryDetails
+      };
+      recordToSend = orderRecord;
+    }
 
     // 1. Изпращане на данните към Make.com Webhook
     try {
@@ -100,7 +140,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(orderRecord),
+        body: JSON.stringify(recordToSend),
       });
       console.log('Поръчката е изпратена успешно към Make.com');
     } catch (error) {
@@ -122,7 +162,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         // Safe fallback
       }
 
-      onOrderPlaced(orderRecord);
+      onOrderPlaced(recordToSend);
     }, 700);
   };
 
@@ -140,9 +180,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         {/* Заглавна лента */}
         <div className="px-5 py-3.5 border-b border-stone-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Truck className="w-4 h-4 text-amber-500" />
+            {orderType === 'subscription' ? (
+              <Repeat className="w-4 h-4 text-amber-500 animate-spin-slow" />
+            ) : (
+              <Truck className="w-4 h-4 text-amber-500" />
+            )}
             <h2 className="text-base font-bold font-display text-white">
-              Заявка за поръчка на кафе
+              {orderType === 'subscription' ? 'Заявка за месечен абонамент' : 'Заявка за поръчка на кафе'}
             </h2>
           </div>
           <button
@@ -164,51 +208,86 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
           )}
 
-          {/* Важно съобщение: Няма физическо онлайн плащане + доставка по Еконт */}
-          <div className="p-3.5 rounded-2xl bg-amber-950/30 border border-amber-600/30 text-xs text-amber-200/90 space-y-2">
-            <div className="flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold text-amber-300 block">
-                  Поръчка без физическо онлайн плащане
-                </span>
-                <span className="text-[11px] text-stone-300 block mt-0.5">
-                  Заявката се изпраща директно към пекарната на <strong className="text-white">КОФУТИНО ЕООД</strong> ({ROASTER_EMAIL}).
+          {/* Предупредителен банер според типа поръчка */}
+          {orderType === 'subscription' ? (
+            <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-600/30 text-xs text-emerald-200/90 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-emerald-300 block">
+                    Абонамент без предплащане и онлайн такси
+                  </span>
+                  <span className="text-[11px] text-stone-300 block mt-0.5">
+                    Днес дължите точно <strong className="text-white">0.00 €</strong>. Поръчката се изпраща към Make.com и се обработва автоматично всеки месец.
+                  </span>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-emerald-800/40 text-[11px] text-stone-300">
+                Заплаща се при получаване на куриера по тарифата на Еконт при доставка.
+              </div>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-2xl bg-amber-950/30 border border-amber-600/30 text-xs text-amber-200/90 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-amber-300 block">
+                    Поръчка без физическо онлайн плащане
+                  </span>
+                  <span className="text-[11px] text-stone-300 block mt-0.5">
+                    Заявката се изпраща директно към пекарната на <strong className="text-white">КОФУТИНО ЕООД</strong> ({ROASTER_EMAIL}).
+                  </span>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-amber-800/40 flex items-start gap-2 text-[11px] text-stone-300">
+                <MessageSquare className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong className="text-amber-300 font-medium">Доставка с Еконт:</strong> Клиентът заплаща доставката по Еконт при получаване. Ще получите СМС от Еконт с номер на товарителница.
                 </span>
               </div>
             </div>
+          )}
 
-            <div className="pt-2 border-t border-amber-800/40 flex items-start gap-2 text-[11px] text-stone-300">
-              <MessageSquare className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <span>
-                <strong className="text-amber-300 font-medium">Доставка с Еконт:</strong> Клиентът заплаща доставката по Еконт при получаване. Ще получите СМС от Еконт с номер на товарителница, че пратката е пристигнала.
-              </span>
-            </div>
-          </div>
-
-          {/* Банер за избрана дата на получаване */}
-          <div className="p-3.5 rounded-2xl bg-stone-900/90 border border-stone-800 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2.5">
-              <Calendar className="w-4 h-4 text-amber-400" />
-              <div>
-                <span className="text-stone-400 block text-[11px]">
-                  Дата на получаване:
-                </span>
-                <span className="font-bold text-amber-200 text-sm">
-                  {formatDateDisplay(selectedDate, 'bg')}
-                </span>
+          {/* График за изпращане */}
+          {orderType === 'subscription' ? (
+            <div className="p-3.5 rounded-2xl bg-stone-900/90 border border-stone-800 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2.5">
+                <CalendarDays className="w-4 h-4 text-amber-400" />
+                <div>
+                  <span className="text-stone-400 block text-[11px]">
+                    Ежемесечен график на изпращане:
+                  </span>
+                  <span className="font-bold text-amber-200 text-sm">
+                    {preferredDispatchDay === '1' && '1-во число от месеца'}
+                    {preferredDispatchDay === '10' && '10-то число от месеца'}
+                    {preferredDispatchDay === '15' && '15-то число от всеки месец'}
+                    {preferredDispatchDay === '20' && '20-то число от всеки месец'}
+                    {preferredDispatchDay === 'first_monday' && 'Всеки първи понеделник'}
+                  </span>
+                </div>
               </div>
             </div>
-            <span className="text-xs font-semibold px-2 py-1 rounded bg-amber-950/80 text-amber-300 border border-amber-600/30">
-              Избрана
-            </span>
-          </div>
+          ) : (
+            <div className="p-3.5 rounded-2xl bg-stone-900/90 border border-stone-800 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2.5">
+                <Calendar className="w-4 h-4 text-amber-400" />
+                <div>
+                  <span className="text-stone-400 block text-[11px]">
+                    Дата на получаване:
+                  </span>
+                  <span className="font-bold text-amber-200 text-sm">
+                    {formatDateDisplay(selectedDate, 'bg')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 1. Данни за контакт */}
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-amber-500" />
-              <span>1. Данни за контакт на клиента</span>
+              <span>1. Данни за контакт на получателя</span>
             </h3>
 
             <div>
@@ -331,87 +410,86 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             )}
           </div>
 
-          {/* 3. НАЧИНИ НА ПЛАЩАНЕ: ВЪЗМОЖНИ СА САМО ДВЕ */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Banknote className="w-3.5 h-3.5 text-amber-500" />
-              <span>3. Начин на плащане (само 2 опции)</span>
-            </h3>
+          {/* 3. НАЧИНИ НА ПЛАЩАНЕ */}
+          {orderType === 'standard' && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Banknote className="w-3.5 h-3.5 text-amber-500" />
+                <span>3. Начин на плащане (само 2 опции)</span>
+              </h3>
 
-            <div className="space-y-2">
-              {/* Опция 1: Наложен платеж при получаване */}
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('cod')}
-                className={`w-full p-3.5 rounded-xl border text-left text-xs transition-all flex items-center justify-between cursor-pointer ${
-                  paymentMethod === 'cod'
-                    ? 'bg-amber-950/50 border-amber-500 text-white ring-1 ring-amber-500/50'
-                    : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                    <Banknote className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <div>
-                    <span className="font-semibold text-stone-100 text-sm block">
-                      1. Наложен платеж при получаване
-                    </span>
-                    <span className="text-[11px] text-stone-400 block mt-0.5">
-                      Заплащате стойността на кафето и доставката на куриера на Еконт при преглед и получаване.
-                    </span>
-                  </div>
-                </div>
-                {paymentMethod === 'cod' && <Check className="w-5 h-5 text-amber-400 shrink-0" />}
-              </button>
-
-              {/* Опция 2: Банково плащане */}
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('bank_transfer')}
-                className={`w-full p-3.5 rounded-xl border text-left text-xs transition-all flex items-center justify-between cursor-pointer ${
-                  paymentMethod === 'bank_transfer'
-                    ? 'bg-amber-950/50 border-amber-500 text-white ring-1 ring-amber-500/50'
-                    : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-500/30 flex items-center justify-center shrink-0">
-                    <Building2 className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <div>
-                    <span className="font-semibold text-stone-100 text-sm block">
-                      2. Банково плащане
-                    </span>
-                    <span className="text-[11px] text-stone-400 block mt-0.5">
-                      Превод по банкова сметка на КОФУТИНО ЕООД.
-                    </span>
-                  </div>
-                </div>
-                {paymentMethod === 'bank_transfer' && <Check className="w-5 h-5 text-amber-400 shrink-0" />}
-              </button>
-
-              {/* Текст с банкови данни при плащане по банков път */}
-              {paymentMethod === 'bank_transfer' && (
-                <div className="p-3.5 rounded-xl bg-amber-950/40 border border-amber-600/40 text-xs text-stone-200 space-y-2 animate-in fade-in duration-150">
-                  <p className="text-[11px] leading-relaxed text-amber-100/90">
-                    Възможно е и плащане по банков път, като за целта клиента заплаща по банкова сметка на Кофутино ЕООД избраното/ите кафета и в условията за плащане посочва номера на поръчката.
-                  </p>
-                  <div className="p-2.5 rounded-lg bg-black/50 border border-stone-800/80 font-mono text-[11px] space-y-1 text-stone-300">
-                    <div>
-                      <span className="text-stone-400 font-sans">БАНКОВА СМЕТКА: </span>
-                      <strong className="text-amber-300 font-bold select-all">BG85UNCR70001525296865</strong>
-                      <span className="text-stone-400 font-sans"> – Уникредит Булбанк АД.</span>
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('cod')}
+                  className={`w-full p-3.5 rounded-xl border text-left text-xs transition-all flex items-center justify-between cursor-pointer ${
+                    paymentMethod === 'cod'
+                      ? 'bg-amber-950/50 border-amber-500 text-white ring-1 ring-amber-500/50'
+                      : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                      <Banknote className="w-4 h-4 text-emerald-400" />
                     </div>
                     <div>
-                      <span className="text-stone-400 font-sans">BIC: </span>
-                      <strong className="text-amber-300 font-bold select-all">UNCRBGSF</strong>
+                      <span className="font-semibold text-stone-100 text-sm block">
+                        1. Наложен платеж при получаване
+                      </span>
+                      <span className="text-[11px] text-stone-400 block mt-0.5">
+                        Заплащате стойността на кафето и доставката на куриера на Еконт при преглед и получаване.
+                      </span>
                     </div>
                   </div>
-                </div>
-              )}
+                  {paymentMethod === 'cod' && <Check className="w-5 h-5 text-amber-400 shrink-0" />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('bank_transfer')}
+                  className={`w-full p-3.5 rounded-xl border text-left text-xs transition-all flex items-center justify-between cursor-pointer ${
+                    paymentMethod === 'bank_transfer'
+                      ? 'bg-amber-950/50 border-amber-500 text-white ring-1 ring-amber-500/50'
+                      : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-500/30 flex items-center justify-center shrink-0">
+                      <Building2 className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <span className="font-semibold text-stone-100 text-sm block">
+                        2. Банково плащане
+                      </span>
+                      <span className="text-[11px] text-stone-400 block mt-0.5">
+                        Превод по банкова сметка на КОФУТИНО ЕООД.
+                      </span>
+                    </div>
+                  </div>
+                  {paymentMethod === 'bank_transfer' && <Check className="w-5 h-5 text-amber-400 shrink-0" />}
+                </button>
+
+                {paymentMethod === 'bank_transfer' && (
+                  <div className="p-3.5 rounded-xl bg-amber-950/40 border border-amber-600/40 text-xs text-stone-200 space-y-2 animate-in fade-in duration-150">
+                    <p className="text-[11px] leading-relaxed text-amber-100/90">
+                      Възможно е и плащане по банков път, като за целта клиента заплаща по банкова сметка на Кофутино ЕООД избраното/ите кафета и в условията за плащане посочва номера на поръчката.
+                    </p>
+                    <div className="p-2.5 rounded-lg bg-black/50 border border-stone-800/80 font-mono text-[11px] space-y-1 text-stone-300">
+                      <div>
+                        <span className="text-stone-400 font-sans">БАНКОВА СМЕТКА: </span>
+                        <strong className="text-amber-300 font-bold select-all">BG85UNCR70001525296865</strong>
+                        <span className="text-stone-400 font-sans"> – Уникредит Булбанк АД.</span>
+                      </div>
+                      <div>
+                        <span className="text-stone-400 font-sans">BIC: </span>
+                        <strong className="text-amber-300 font-bold select-all">UNCRBGSF</strong>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Бележки към пекарната */}
           <div>
@@ -439,7 +517,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <span className="text-stone-200 font-medium">{it.coffeeName}</span>{' '}
                     <span className="text-amber-300 font-bold">({it.size === '250g' ? '250 гр' : '1 кг'})</span>
                     <span className="text-stone-400 text-[10px] block">
-                      {it.grindName} × {it.quantity} бр.
+                      {it.grind === 'whole_bean' ? 'на зърна' : `смляно (${it.grindName})`} × {it.quantity} бр.
                     </span>
                   </div>
                   <span className="font-mono text-stone-200 font-semibold shrink-0">
@@ -457,11 +535,22 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
 
             <div className="pt-2 border-t border-stone-800 flex justify-between items-baseline text-xs">
-              <span className="text-stone-300 font-medium">Общо за кафето:</span>
+              <span className="text-stone-300 font-medium">
+                {orderType === 'subscription' ? 'Прогнозна месечна сума за кафе:' : 'Общо за кафето:'}
+              </span>
               <span className="text-base font-bold font-mono text-amber-300">
                 {subtotalEur.toFixed(2)} €
               </span>
             </div>
+
+            {orderType === 'subscription' && (
+              <div className="pt-2 border-t border-emerald-900/50 flex justify-between items-baseline text-xs">
+                <span className="text-emerald-400 font-semibold">Дължимо днес:</span>
+                <span className="text-base font-bold font-mono text-emerald-400">
+                  0.00 €
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Бутон за изпращане */}
@@ -472,12 +561,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               className="w-full min-h-[50px] rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-60 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer"
             >
               {isSubmitting ? (
-                <span>Генериране и изпращане на поръчката...</span>
+                <span>Генериране и изпращане на абонамента...</span>
               ) : (
                 <>
-                  <Mail className="w-4 h-4" />
+                  {orderType === 'subscription' ? <Repeat className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
                   <span>
-                    Изпрати поръчката ({subtotalEur.toFixed(2)} €)
+                    {orderType === 'subscription' ? 'Потвърди абонаментната заявка (0.00 € днес)' : `Изпрати поръчката (${subtotalEur.toFixed(2)} €)`}
                   </span>
                 </>
               )}

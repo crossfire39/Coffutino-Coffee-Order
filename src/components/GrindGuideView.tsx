@@ -22,6 +22,7 @@ export const GrindGuideView: React.FC<GrindGuideViewProps> = ({
   const getRecommendedCoffees = (grindId: GrindId): CoffeeSort[] => {
     switch (grindId) {
       case 'espresso':
+        return COFFEE_SORTS; // All coffees are suitable for espresso
       case 'moka':
         return COFFEE_SORTS.filter(c => c.id === 'coffutino-fusion-blend' || c.id === 'brazil-san-rafael' || c.id === 'colombia-supremo');
       case 'filter':
@@ -30,8 +31,10 @@ export const GrindGuideView: React.FC<GrindGuideViewProps> = ({
         return COFFEE_SORTS.filter(c => c.id === 'brazil-san-rafael' || c.id === 'colombia-decaf-specialty' || c.id === 'coffutino-fusion-blend');
       case 'turkish':
         return COFFEE_SORTS.filter(c => c.id === 'colombia-supremo' || c.id === 'coffutino-fusion-blend');
+      case 'whole_bean':
+        return []; // No recommended list rendered for whole bean
       default:
-        return COFFEE_SORTS.slice(0, 3);
+        return COFFEE_SORTS;
     }
   };
 
@@ -141,62 +144,64 @@ export const GrindGuideView: React.FC<GrindGuideViewProps> = ({
       </div>
 
       {/* Препоръчани сортове кафе за това смилане */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
-            Препоръчани сортове за {selectedGrind.nameBg}
-          </h3>
-        </div>
+      {selectedGrindId !== 'whole_bean' && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
+              Препоръчани сортове за {selectedGrind.nameBg}
+            </h3>
+          </div>
 
-        <div className="space-y-2.5">
-          {recommendedCoffees.map((coffee) => {
-            const price250 = currency === 'EUR' ? coffee.price250g : coffee.price250gBgn;
+          <div className="space-y-2.5">
+            {recommendedCoffees.map((coffee) => {
+              const price250 = currency === 'EUR' ? coffee.price250g : coffee.price250gBgn;
 
-            return (
-              <div
-                key={coffee.id}
-                onClick={() => onSelectCoffee(coffee)}
-                className="p-3.5 rounded-xl bg-stone-900/60 border border-stone-800 hover:border-amber-700/50 transition-all cursor-pointer flex items-center justify-between gap-3 group"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{coffee.flag}</span>
-                  <div>
-                    <h4 className="text-sm font-bold text-stone-100 group-hover:text-amber-200 transition-colors font-display">
-                      {coffee.name}
-                    </h4>
-                    <span className="text-[11px] text-stone-400 block">
-                      {coffee.originBg} · SCA {coffee.scaScore}
-                    </span>
-                    <div className="flex gap-1 mt-1">
-                      {coffee.tastingNotesBg.slice(0, 2).map((t, idx) => (
-                        <span key={idx} className="text-[10px] bg-stone-800 text-stone-300 px-1.5 py-0.5 rounded">
-                          {t}
-                        </span>
-                      ))}
+              return (
+                <div
+                  key={coffee.id}
+                  onClick={() => onSelectCoffee(coffee)}
+                  className="p-3.5 rounded-xl bg-stone-900/60 border border-stone-800 hover:border-amber-700/50 transition-all cursor-pointer flex items-center justify-between gap-3 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{coffee.flag}</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-stone-100 group-hover:text-amber-200 transition-colors font-display">
+                        {coffee.name}
+                      </h4>
+                      <span className="text-[11px] text-stone-400 block">
+                        {coffee.originBg} · SCA {coffee.scaScore}
+                      </span>
+                      <div className="flex gap-1 mt-1">
+                        {coffee.tastingNotesBg.slice(0, 2).map((t, idx) => (
+                          <span key={idx} className="text-[10px] bg-stone-800 text-stone-300 px-1.5 py-0.5 rounded">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="text-right flex flex-col items-end gap-1.5">
-                  <div className="text-xs font-mono font-bold text-amber-300">
-                    {price250.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'} <span className="text-[10px] text-stone-500 font-normal">/ 250г</span>
+                  <div className="text-right flex flex-col items-end gap-1.5">
+                    <div className="text-xs font-mono font-bold text-amber-300">
+                      {price250.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'} <span className="text-[10px] text-stone-500 font-normal">/ 250г</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToCart(coffee, '250g', selectedGrindId);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-semibold flex items-center gap-1 active:scale-95 cursor-pointer"
+                    >
+                      <span>+ 250г</span>
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddToCart(coffee, '250g', selectedGrindId);
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-semibold flex items-center gap-1 active:scale-95 cursor-pointer"
-                  >
-                    <span>+ 250г</span>
-                  </button>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CartItem, GrindId } from '../types';
 import { GRIND_OPTIONS } from '../data/coffeeData';
 import { DeliveryDatePicker } from './DeliveryDatePicker';
-import { Trash2, Plus, Minus, ArrowRight, ShieldCheck, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShieldCheck, ShoppingBag, Repeat, CalendarDays, HelpCircle } from 'lucide-react';
 
 interface CartViewProps {
   items: CartItem[];
@@ -12,6 +12,10 @@ interface CartViewProps {
   onUpdateGrind: (cartItemId: string, newGrind: GrindId) => void;
   selectedDate: string;
   onSelectDate: (d: string) => void;
+  orderType: 'standard' | 'subscription';
+  setOrderType: (t: 'standard' | 'subscription') => void;
+  preferredDispatchDay: string;
+  setPreferredDispatchDay: (day: string) => void;
   onProceedToCheckout: () => void;
   onExploreSorts: () => void;
 }
@@ -24,6 +28,10 @@ export const CartView: React.FC<CartViewProps> = ({
   onUpdateGrind,
   selectedDate,
   onSelectDate,
+  orderType,
+  setOrderType,
+  preferredDispatchDay,
+  setPreferredDispatchDay,
   onProceedToCheckout,
   onExploreSorts
 }) => {
@@ -79,6 +87,35 @@ export const CartView: React.FC<CartViewProps> = ({
           className="text-xs text-amber-400 hover:text-amber-300 font-medium transition-colors cursor-pointer"
         >
           + Добави още
+        </button>
+      </div>
+
+      {/* ИЗБОР НА ТИП ПОРЪЧКА: ЕДНОКРАТНА ИЛИ МЕСЕЧЕН АБОНАМЕНТ */}
+      <div className="grid grid-cols-2 gap-2 bg-stone-900/90 border border-stone-800 p-1 rounded-2xl">
+        <button
+          type="button"
+          onClick={() => setOrderType('standard')}
+          className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+            orderType === 'standard'
+              ? 'bg-amber-600 text-white shadow-md'
+              : 'text-stone-400 hover:text-stone-200'
+          }`}
+        >
+          <ShoppingBag className="w-4 h-4" />
+          <span>Еднократна поръчка</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setOrderType('subscription')}
+          className={`py-3 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+            orderType === 'subscription'
+              ? 'bg-amber-600 text-white shadow-md'
+              : 'text-stone-400 hover:text-stone-200'
+          }`}
+        >
+          <Repeat className="w-4 h-4" />
+          <span>Месечен абонамент</span>
         </button>
       </div>
 
@@ -188,22 +225,48 @@ export const CartView: React.FC<CartViewProps> = ({
         })}
       </div>
 
-      {/* СЕКЦИЯ ЗА ДАТА НА ПОЛУЧАВАНЕ */}
-      <div className="p-4 rounded-2xl bg-stone-900/90 border border-stone-800 space-y-4">
-        <DeliveryDatePicker
-          selectedDate={selectedDate}
-          onSelectDate={onSelectDate}
-        />
-      </div>
+      {/* ДАТА НА ИЗПРАЩАНЕ / ДОСТАВКА СПОРЕД ТИПА ПОРЪЧКА */}
+      {orderType === 'standard' ? (
+        <div className="p-4 rounded-2xl bg-stone-900/90 border border-stone-800 space-y-4">
+          <DeliveryDatePicker
+            selectedDate={selectedDate}
+            onSelectDate={onSelectDate}
+          />
+        </div>
+      ) : (
+        <div className="p-4 rounded-2xl bg-stone-900/90 border border-stone-800 space-y-3">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-amber-500" />
+            <h3 className="text-xs font-semibold text-stone-300 uppercase tracking-wider">
+              Ежемесечен график на изпращане
+            </h3>
+          </div>
+          <p className="text-[11px] text-stone-400 leading-relaxed">
+            Изберете на кое число от месеца желаете да изпичаме и изпращаме вашите кафета автоматично:
+          </p>
+
+          <select
+            value={preferredDispatchDay}
+            onChange={(e) => setPreferredDispatchDay(e.target.value)}
+            className="w-full bg-stone-950 border border-stone-700 text-stone-100 text-xs rounded-xl px-3.5 py-3 focus:outline-none focus:border-amber-500 cursor-pointer"
+          >
+            <option value="1">1-во число от всеки месец</option>
+            <option value="10">10-то число от всеки месец</option>
+            <option value="15">15-то число от всеки месец</option>
+            <option value="20">20-то число от всеки месец</option>
+            <option value="first_monday">Всеки първи понеделник от месеца</option>
+          </select>
+        </div>
+      )}
 
       {/* Обобщение на цените */}
       <div className="p-4 rounded-2xl bg-stone-900/90 border border-stone-800 space-y-2.5 text-xs">
         <h4 className="font-semibold text-stone-300 uppercase tracking-wider text-[11px]">
-          Обобщение на поръчката
+          Обобщение на плащането
         </h4>
 
         <div className="flex justify-between text-stone-400">
-          <span>Сума за кафе</span>
+          <span>{orderType === 'subscription' ? 'Прогнозна сума за кафе / мес.' : 'Сума за кафе'}</span>
           <span className="font-mono text-stone-200 font-semibold">
             {currentSubtotal.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}
           </span>
@@ -212,22 +275,41 @@ export const CartView: React.FC<CartViewProps> = ({
         <div className="flex justify-between items-center text-stone-400 pt-1">
           <span>Доставка по Еконт</span>
           <span className="text-amber-300 font-medium text-[11px] text-right">
-            Заплаща се от клиента при получаване
+            Заплаща се при получаване
           </span>
         </div>
 
-        <div className="pt-2 border-t border-stone-800 flex justify-between items-baseline text-sm font-bold text-stone-100">
-          <span>Общо за кафето</span>
-          <span className="text-xl font-mono text-amber-300">
-            {currentSubtotal.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}
-          </span>
-        </div>
+        {/* Разделение в случай на Абонамент */}
+        {orderType === 'subscription' ? (
+          <>
+            <div className="pt-2 border-t border-stone-800 flex justify-between items-baseline text-sm font-bold text-stone-100">
+              <span>Дължимо днес</span>
+              <span className="text-xl font-mono text-emerald-400 font-bold">
+                0.00 €
+              </span>
+            </div>
+            <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-300 flex items-center justify-between">
+              <span>Статус:</span>
+              <span className="font-bold">Заплащане при получаване</span>
+            </div>
+          </>
+        ) : (
+          <div className="pt-2 border-t border-stone-800 flex justify-between items-baseline text-sm font-bold text-stone-100">
+            <span>Общо за кафето</span>
+            <span className="text-xl font-mono text-amber-300">
+              {currentSubtotal.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}
+            </span>
+          </div>
+        )}
 
         <div className="pt-1 text-[11px] text-stone-400 space-y-1">
           <div className="flex items-start gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
             <span>
-              Клиентът заплаща доставката директно по Еконт. Избор между наложен платеж или банков превод. Без онлайн таксуване.
+              {orderType === 'subscription' 
+                ? 'Пълна гъвкавост. Без обвързване, предплащания или такси днес. Можете да променяте поръчката по всяко време.'
+                : 'Клиентът заплаща доставката директно по Еконт. Избор между наложен платеж или банков превод. Без онлайн таксуване.'
+              }
             </span>
           </div>
         </div>
@@ -241,7 +323,7 @@ export const CartView: React.FC<CartViewProps> = ({
           className="w-full min-h-[50px] rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-xl shadow-amber-900/30 active:scale-[0.98] cursor-pointer"
         >
           <span>
-            Продължи към заявка за поръчка
+            {orderType === 'subscription' ? 'Продължи към абонаментна заявка' : 'Продължи към заявка за поръчка'}
           </span>
           <ArrowRight className="w-4 h-4" />
         </button>

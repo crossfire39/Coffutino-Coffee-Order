@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { CoffeeSort, CoffeeSize, GrindId, CartItem, OrderRecord } from './types';
+import { CoffeeSort, CoffeeSize, GrindId, CartItem, OrderRecord, CoffeeSubscription } from './types';
 import { COFFEE_SORTS, HERO_IMAGE, GRIND_OPTIONS, getEarliestDeliveryDate, formatIsoDate } from './data/coffeeData';
 import { IPhoneFrame } from './components/IPhoneFrame';
 import { TopNavbar } from './components/TopNavbar';
@@ -13,11 +13,12 @@ import { CoffeeCard } from './components/CoffeeCard';
 import { CoffeeDetailModal } from './components/CoffeeDetailModal';
 import { GrindGuideView } from './components/GrindGuideView';
 import { CartView } from './components/CartView';
+import { SubscriptionView } from './components/SubscriptionView';
 import { CheckoutModal } from './components/CheckoutModal';
 import { OrderConfirmationModal } from './components/OrderConfirmationModal';
 import { OrdersHistoryView } from './components/OrdersHistoryView';
 import { PWAInstallButton } from './components/PWAInstallButton';
-import { Calendar, Coffee, Flame, ExternalLink } from 'lucide-react';
+import { Calendar, Coffee, Flame, ExternalLink, Repeat } from 'lucide-react';
 
 export default function App() {
   // Навигация и състояние (валута: евро)
@@ -32,10 +33,14 @@ export default function App() {
     return formatIsoDate(getEarliestDeliveryDate());
   });
 
+  // Тип поръчка: еднократна или абонаментна
+  const [orderType, setOrderType] = useState<'standard' | 'subscription'>('standard');
+  const [preferredDispatchDay, setPreferredDispatchDay] = useState<string>('15');
+
   // Модални прозорци
   const [selectedCoffeeForDetails, setSelectedCoffeeForDetails] = useState<CoffeeSort | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
-  const [confirmedOrder, setConfirmedOrder] = useState<OrderRecord | null>(null);
+  const [confirmedOrder, setConfirmedOrder] = useState<OrderRecord | CoffeeSubscription | null>(null);
 
   // Количка (синхронизирана в localStorage, цени в евро)
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -141,6 +146,19 @@ export default function App() {
     ];
   });
 
+  // Активни месечни абонаменти (синхронизирани в localStorage)
+  const [subscriptions, setSubscriptions] = useState<CoffeeSubscription[]>(() => {
+    try {
+      const saved = localStorage.getItem('coffutino_subscriptions');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
   // Запазване на количката в localStorage
   useEffect(() => {
     try {
@@ -158,6 +176,15 @@ export default function App() {
       // ignore
     }
   }, [orders]);
+
+  // Запазване на абонаментите в localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('coffutino_subscriptions', JSON.stringify(subscriptions));
+    } catch {
+      // ignore
+    }
+  }, [subscriptions]);
 
   // Добавяне в количката
   const handleAddToCart = (coffee: CoffeeSort, size: CoffeeSize, grind: GrindId) => {
@@ -235,12 +262,25 @@ export default function App() {
     setActiveTab('cart');
   };
 
-  // Успешно изпратена поръчка
-  const handleOrderPlaced = (order: OrderRecord) => {
-    setOrders((prev) => [order, ...prev]);
+  // Успешно изпратена поръчка / абонамент
+  const handleOrderPlaced = (order: OrderRecord | CoffeeSubscription) => {
+    const isSub = (order as any).subscriptionNumber !== undefined;
+    if (isSub) {
+      setSubscriptions((prev) => [order as CoffeeSubscription, ...prev]);
+    } else {
+      setOrders((prev) => [order as OrderRecord, ...prev]);
+    }
     setCart([]);
     setIsCheckoutOpen(false);
     setConfirmedOrder(order);
+  };
+
+  const handleUpdateSubscription = (updated: CoffeeSubscription) => {
+    setSubscriptions(prev => prev.map(sub => sub.id === updated.id ? updated : sub));
+  };
+
+  const handleCancelSubscription = (subId: string) => {
+    setSubscriptions(prev => prev.filter(sub => sub.id !== subId));
   };
 
   // Филтриране на сортовете
@@ -287,13 +327,14 @@ export default function App() {
                 <span className="text-[10px] text-stone-400">250г и 1кг</span>
               </div>
 
-              <div className="p-2.5 rounded-2xl bg-stone-900/80 border border-stone-800">
-                <Flame className="w-3.5 h-3.5 text-amber-500 mx-auto mb-1" />
-                <span className="font-semibold text-stone-200 block text-[11px]">
-                  По избор
-                </span>
-                <span className="text-[10px] text-stone-400">
-                  6 вида смилане
+              <div
+                onClick={() => setActiveTab('subscription')}
+                className="p-2.5 rounded-2xl bg-amber-950/20 border border-amber-600/30 hover:border-amber-500/50 cursor-pointer transition-all text-amber-300"
+              >
+                <Repeat className="w-3.5 h-3.5 text-amber-500 mx-auto mb-1 animate-spin-slow" />
+                <span className="font-bold text-stone-100 block text-[11px]">Абонамент</span>
+                <span className="text-[10px] text-amber-400">
+                  Без плащане днес
                 </span>
               </div>
 
@@ -429,12 +470,31 @@ export default function App() {
             onUpdateGrind={handleUpdateGrind}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
+            orderType={orderType}
+            setOrderType={setOrderType}
+            preferredDispatchDay={preferredDispatchDay}
+            setPreferredDispatchDay={setPreferredDispatchDay}
             onProceedToCheckout={() => setIsCheckoutOpen(true)}
             onExploreSorts={() => setActiveTab('sorts')}
           />
         )}
 
-        {/* Таб 4: Моите поръчки и статус на изпичане */}
+        {/* Таб 4: Месечен абонамент */}
+        {activeTab === 'subscription' && (
+          <SubscriptionView
+            subscriptions={subscriptions}
+            currency={currency}
+            onUpdateSubscription={handleUpdateSubscription}
+            onCancelSubscription={handleCancelSubscription}
+            onExploreSorts={() => setActiveTab('sorts')}
+            onCreateSubscriptionFromCart={() => {
+              setOrderType('subscription');
+              setActiveTab('cart');
+            }}
+          />
+        )}
+
+        {/* Таб 5: Моите поръчки и статус на изпичане */}
         {activeTab === 'orders' && (
           <OrdersHistoryView
             orders={orders}
@@ -466,6 +526,8 @@ export default function App() {
         items={cart}
         currency={currency}
         selectedDate={selectedDate}
+        orderType={orderType}
+        preferredDispatchDay={preferredDispatchDay}
         onOrderPlaced={handleOrderPlaced}
       />
 
@@ -475,6 +537,10 @@ export default function App() {
         onViewOrders={() => {
           setConfirmedOrder(null);
           setActiveTab('orders');
+        }}
+        onViewSubscription={() => {
+          setConfirmedOrder(null);
+          setActiveTab('subscription');
         }}
       />
     </IPhoneFrame>

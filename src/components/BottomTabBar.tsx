@@ -1,7 +1,7 @@
 import React from 'react';
-import { Coffee, Layers, ShoppingBag, CalendarClock } from 'lucide-react';
+import { Coffee, Layers, ShoppingBag, CalendarClock, Repeat } from 'lucide-react';
 
-export type AppTab = 'sorts' | 'grinds' | 'cart' | 'orders';
+export type AppTab = 'sorts' | 'grinds' | 'cart' | 'orders' | 'subscription';
 
 interface BottomTabBarProps {
   activeTab: AppTab;
@@ -30,6 +30,11 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
       label: 'Количка',
       icon: ShoppingBag,
       badge: cartCount > 0 ? cartCount : undefined
+    },
+    {
+      id: 'subscription' as AppTab,
+      label: 'Абонамент',
+      icon: Repeat
     },
     {
       id: 'orders' as AppTab,
