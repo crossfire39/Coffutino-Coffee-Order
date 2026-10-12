@@ -295,7 +295,12 @@ export default function App() {
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <IPhoneFrame activeRoastCount={orders.length} cartItemCount={totalCartCount}>
+    <IPhoneFrame 
+      activeRoastCount={orders.length} 
+      cartItemCount={totalCartCount}
+      activeTab={activeTab}
+      onChangeTab={(t) => setActiveTab(t)}
+    >
       {/* Горна навигационна лента */}
       <TopNavbar
         cartCount={totalCartCount}
@@ -503,14 +508,7 @@ export default function App() {
             onExploreSorts={() => setActiveTab('sorts')}
           />
         )}
-      </main>
-
-      {/* Долна лента с табове */}
-      <BottomTabBar
-        activeTab={activeTab}
-        onChangeTab={(t) => setActiveTab(t)}
-        cartCount={totalCartCount}
-      />
+       </main>
 
       {/* Модални прозорци */}
       <CoffeeDetailModal

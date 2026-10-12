@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Monitor, Wifi, BatteryCharging, Signal } from 'lucide-react';
+import { BottomTabBar, AppTab } from './BottomTabBar';
 
 interface IPhoneFrameProps {
   children: React.ReactNode;
   activeRoastCount?: number;
   cartItemCount?: number;
+  activeTab?: AppTab;
+  onChangeTab?: (tab: AppTab) => void;
 }
 
 export const IPhoneFrame: React.FC<IPhoneFrameProps> = ({
   children,
   activeRoastCount = 1,
-  cartItemCount = 0
+  cartItemCount = 0,
+  activeTab,
+  onChangeTab
 }) => {
   const [deviceFrameMode, setDeviceFrameMode] = useState<boolean>(true);
   const [currentTime, setCurrentTime] = useState<string>('09:41');
@@ -113,14 +118,18 @@ export const IPhoneFrame: React.FC<IPhoneFrameProps> = ({
           </div>
 
           {/* App Scrollable Content Canvas */}
-          <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar relative">
+          <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar relative pb-32">
             {children}
           </div>
 
-          {/* iOS Home Indicator Bar */}
-          <div className="sticky bottom-0 z-50 w-full pt-1 pb-2 bg-[#141211]/90 backdrop-blur-md flex justify-center pointer-events-none">
-            <div className="w-32 h-1 bg-stone-500/40 rounded-full" />
-          </div>
+          {/* Bottom Tab Bar (Pinned / Fixed at Bottom with Safe Area & Home Indicator) */}
+          {activeTab && onChangeTab && (
+            <BottomTabBar
+              activeTab={activeTab}
+              onChangeTab={onChangeTab}
+              cartCount={cartItemCount}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -44,43 +44,50 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
   ];
 
   return (
-    <nav className="sticky bottom-0 z-40 bg-[#161413]/95 backdrop-blur-xl border-t border-stone-800/80 px-2 py-1 flex items-center justify-around select-none">
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
+    <nav className="absolute bottom-0 left-0 right-0 z-50 bg-[#161413]/95 backdrop-blur-xl border-t border-stone-800/80 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] flex flex-col select-none shadow-2xl">
+      <div className="flex items-center justify-around w-full">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
 
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onChangeTab(tab.id)}
-            className={`flex-1 flex flex-col items-center justify-center min-h-[48px] py-1 transition-all relative cursor-pointer ${
-              isActive
-                ? 'text-amber-400 font-semibold'
-                : 'text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            <div className="relative">
-              <Icon
-                className={`w-5 h-5 transition-transform duration-200 ${
-                  isActive ? 'scale-110 stroke-[2.3]' : 'stroke-[1.7]'
-                }`}
-              />
-              {tab.badge !== undefined && (
-                <span className="absolute -top-1.5 -right-2.5 bg-amber-500 text-stone-950 font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse">
-                  {tab.badge}
-                </span>
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onChangeTab(tab.id)}
+              className={`flex-1 flex flex-col items-center justify-center min-h-[48px] py-1 transition-all relative cursor-pointer ${
+                isActive
+                  ? 'text-amber-400 font-semibold'
+                  : 'text-stone-400 hover:text-stone-200'
+              }`}
+            >
+              <div className="relative">
+                <Icon
+                  className={`w-5 h-5 transition-transform duration-200 ${
+                    isActive ? 'scale-110 stroke-[2.3]' : 'stroke-[1.7]'
+                  }`}
+                />
+                {tab.badge !== undefined && (
+                  <span className="absolute -top-1.5 -right-2.5 bg-amber-500 text-stone-950 font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse">
+                    {tab.badge}
+                  </span>
+                )}
+              </div>
+              <span className="text-[11px] tracking-tight mt-1 leading-none">
+                {tab.label}
+              </span>
+              {isActive && (
+                <span className="absolute bottom-1 w-6 h-0.5 bg-amber-400 rounded-full" />
               )}
-            </div>
-            <span className="text-[11px] tracking-tight mt-1 leading-none">
-              {tab.label}
-            </span>
-            {isActive && (
-              <span className="absolute bottom-0.5 w-6 h-0.5 bg-amber-400 rounded-full" />
-            )}
-          </button>
-        );
-      })}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* iOS Home Indicator Bar */}
+      <div className="w-full pt-2 pb-0.5 flex justify-center pointer-events-none">
+        <div className="w-32 h-1 bg-stone-500/40 rounded-full" />
+      </div>
     </nav>
   );
 };
