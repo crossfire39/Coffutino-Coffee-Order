@@ -13,7 +13,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onOpenCart
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-[#161413]/95 backdrop-blur-md px-4 py-3 border-b border-stone-800/80 flex items-center justify-between transition-colors">
+    <header className="sticky top-0 z-40 bg-[#161413]/95 backdrop-blur-md px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] border-b border-stone-800/80 flex items-center justify-between transition-colors">
       {/* Zone 1: Лого и име КОФУТИНО ЕООД */}
       <div className="flex items-center gap-2.5 min-w-0">
         <img

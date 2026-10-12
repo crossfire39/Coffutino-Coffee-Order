@@ -80,10 +80,10 @@ export const IPhoneFrame: React.FC<IPhoneFrameProps> = ({
         }`}
       >
         <div
-          className={`w-full relative flex flex-col bg-[#141211] text-stone-100 overflow-hidden ${
+          className={`w-full relative flex flex-col bg-[#141211] text-stone-100 overflow-hidden h-[100dvh] lg:h-[870px] ${
             deviceFrameMode
-              ? 'lg:rounded-[52px] lg:border-[11px] lg:border-[#2a2725] lg:shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)] lg:h-[870px]'
-              : 'min-h-screen border-x border-stone-800/40 shadow-2xl'
+              ? 'lg:rounded-[52px] lg:border-[11px] lg:border-[#2a2725] lg:shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.08)]'
+              : 'border-x border-stone-800/40 shadow-2xl'
           }`}
         >
           {/* iOS Top Status Bar */}
@@ -118,7 +118,10 @@ export const IPhoneFrame: React.FC<IPhoneFrameProps> = ({
           </div>
 
           {/* App Scrollable Content Canvas */}
-          <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar relative pb-32">
+          <div 
+            className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative pb-32"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             {children}
           </div>
 
