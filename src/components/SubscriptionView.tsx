@@ -28,11 +28,22 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
   const [phoneOrEmail, setPhoneOrEmail] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginError, setFormError] = useState('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Editing Subscription Items State
   const [editingSub, setEditingSub] = useState<CoffeeSubscription | null>(null);
   const [editingItems, setEditingItems] = useState<CartItem[]>([]);
   const [editingDispatchDay, setEditingDispatchDay] = useState<string>('15');
+  const [editingFullName, setEditingFullName] = useState<string>('');
+  const [editingPhone, setEditingPhone] = useState<string>('');
+  const [editingEmail, setEditingEmail] = useState<string>('');
+  const [editingDeliveryType, setEditingDeliveryType] = useState<'courier' | 'econt_office'>('econt_office');
+  const [editingCity, setEditingCity] = useState<string>('');
+  const [editingAddress, setEditingAddress] = useState<string>('');
+  const [editingEcontOffice, setEditingEcontOffice] = useState<string>('');
+  const [subToCancel, setSubToCancel] = useState<CoffeeSubscription | null>(null);
+  const [subToPause, setSubToPause] = useState<CoffeeSubscription | null>(null);
+  const [subToResume, setSubToResume] = useState<CoffeeSubscription | null>(null);
 
   // Add item state during edit
   const [addCoffeeId, setAddCoffeeId] = useState<string>(COFFEE_SORTS[0].id);
@@ -68,41 +79,87 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
     }
   };
 
-  const handlePauseToggle = (sub: CoffeeSubscription) => {
-    const updatedStatus = sub.status === 'active' ? 'paused' : 'active';
+  const handlePauseSub = (sub: CoffeeSubscription) => {
+    setSubToPause(sub);
+  };
+
+  const handleResumeSub = (sub: CoffeeSubscription) => {
+    setSubToResume(sub);
+  };
+
+  const confirmPauseSub = () => {
+    if (!subToPause) return;
+
     const updated: CoffeeSubscription = {
-      ...sub,
-      status: updatedStatus
+      ...subToPause,
+      status: 'paused'
     };
     onUpdateSubscription(updated);
-    
-    // Send info to webhook with specific action flag
-    triggerWebhookUpdate(updated, 'pause');
+    triggerWebhookUpdate(updated, 'paused');
+    setSubToPause(null);
+    alert('Абонаментът е спрян на пауза.');
+  };
+
+  const confirmResumeSub = () => {
+    if (!subToResume) return;
+
+    const updated: CoffeeSubscription = {
+      ...subToResume,
+      status: 'active'
+    };
+    onUpdateSubscription(updated);
+    triggerWebhookUpdate(updated, 'restarted');
+    setSubToResume(null);
+    alert('Абонаментът беше подновен успешно!');
   };
 
   const handleCancelSub = (sub: CoffeeSubscription) => {
-    if (!sub) return;
+    setSubToCancel(sub);
+  };
 
-    if (window.confirm('Искате ли да откажете абонамента?')) {
-      const updated: CoffeeSubscription = {
-        ...sub,
-        status: 'canceled'
-      };
-      onUpdateSubscription(updated);
-      triggerWebhookUpdate(updated, 'cancel');
-      alert('Абонаментът беше отказан успешно! (Статус: canceled)');
-    }
+  const confirmCancelSub = () => {
+    if (!subToCancel) return;
+
+    const updated: CoffeeSubscription = {
+      ...subToCancel,
+      status: 'canceled'
+    };
+    onUpdateSubscription(updated);
+    triggerWebhookUpdate(updated, 'cancel');
+    setSubToCancel(null);
+    alert('Абонаментът беше отказан успешно! (Статус: canceled)');
   };
 
   const startEditing = (sub: CoffeeSubscription) => {
     setEditingSub(sub);
     setEditingItems([...sub.items]);
     setEditingDispatchDay(sub.preferredDispatchDay);
+    setEditingFullName(sub.customer.fullName || '');
+    setEditingPhone(sub.customer.phone || '');
+    setEditingEmail(sub.customer.email || '');
+    setEditingDeliveryType((sub.customer.deliveryType as 'courier' | 'econt_office') || 'econt_office');
+    setEditingCity(sub.customer.city || '');
+    setEditingAddress(sub.customer.address || '');
+    setEditingEcontOffice(sub.customer.econtOffice || '');
   };
 
   const cancelEditing = () => {
     setEditingSub(null);
     setEditingItems([]);
+    setEditingFullName('');
+    setEditingPhone('');
+    setEditingEmail('');
+    setEditingDeliveryType('econt_office');
+    setEditingCity('');
+    setEditingAddress('');
+    setEditingEcontOffice('');
+  };
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
   };
 
   const saveEditing = () => {
@@ -118,12 +175,31 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
       estimatedSubtotalEur: subtotalEur,
       estimatedTotalEur: subtotalEur,
       subtotalEur,
-      totalEur: subtotalEur
+      totalEur: subtotalEur,
+      customer: {
+        ...editingSub.customer,
+        fullName: editingFullName,
+        phone: editingPhone,
+        email: editingEmail,
+        deliveryType: editingDeliveryType,
+        city: editingCity,
+        address: editingDeliveryType === 'courier' ? editingAddress : '',
+        econtOffice: editingDeliveryType === 'econt_office' ? editingEcontOffice : ''
+      }
     };
 
     onUpdateSubscription(updated);
     setEditingSub(null);
     setEditingItems([]);
+    
+    // Clear other states
+    setEditingFullName('');
+    setEditingPhone('');
+    setEditingEmail('');
+    setEditingDeliveryType('econt_office');
+    setEditingCity('');
+    setEditingAddress('');
+    setEditingEcontOffice('');
 
     try {
       confetti({
@@ -133,14 +209,16 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
       });
     } catch {}
 
+    showToast("Промените бяха запазени успешно!");
     triggerWebhookUpdate(updated, 'update');
   };
 
   // Trigger Make.com Webhook with explicit action format
-  const triggerWebhookUpdate = async (sub: CoffeeSubscription, actionType: 'pause' | 'update' | 'cancel') => {
+  const triggerWebhookUpdate = async (sub: CoffeeSubscription, actionType: 'paused' | 'update' | 'cancel' | 'restarted') => {
     const payload = {
       id: sub.id,
       subscriptionNumber: sub.subscriptionNumber,
+      orderNumber: sub.subscriptionNumber, // Retrieve and include unique order number/ID
       createdAt: sub.createdAt,
       status: sub.status,
       preferredDispatchDay: sub.preferredDispatchDay,
@@ -369,9 +447,13 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                                 ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' 
                                 : sub.status === 'canceled' || sub.status === 'cancelled'
                                 ? 'bg-red-950 text-red-400 border border-red-500/30 animate-pulse'
-                                : 'bg-stone-800 text-stone-500'
+                                : 'bg-amber-950 text-amber-400 border border-amber-500/30'
                             }`}>
-                              {sub.status === 'active' ? 'Активен' : sub.status === 'canceled' || sub.status === 'cancelled' ? 'Отказан (canceled)' : 'Паузиран'}
+                              {sub.status === 'active' 
+                                ? 'Активен' 
+                                : sub.status === 'canceled' || sub.status === 'cancelled' 
+                                ? 'Отказан (canceled)' 
+                                : 'На пауза (paused)'}
                             </span>
                           </div>
                           <span className="text-[10px] text-stone-500 block mt-1">
@@ -407,6 +489,115 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                               <option value="20">20-то число от всеки месец</option>
                               <option value="first_monday">Всеки първи понеделник</option>
                             </select>
+                          </div>
+
+                          {/* ДАННИ ЗА ДОСТАВКА */}
+                          <div className="p-3 bg-stone-950 rounded-xl border border-stone-800 space-y-3">
+                            <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
+                              <MapPin className="w-3.5 h-3.5 text-amber-500" />
+                              Данни за доставка:
+                            </span>
+
+                            <div className="space-y-2.5">
+                              <div>
+                                <label className="text-[10px] text-stone-400 block mb-1">Получател (Три имена):</label>
+                                <input
+                                  type="text"
+                                  value={editingFullName}
+                                  onChange={(e) => setEditingFullName(e.target.value)}
+                                  className="w-full bg-stone-900 border border-stone-800 text-stone-100 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-amber-500"
+                                  placeholder="Две или три имена"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="text-[10px] text-stone-400 block mb-1">Телефон:</label>
+                                  <input
+                                    type="text"
+                                    value={editingPhone}
+                                    onChange={(e) => setEditingPhone(e.target.value)}
+                                    className="w-full bg-stone-900 border border-stone-800 text-stone-100 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-amber-500"
+                                    placeholder="+359..."
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-[10px] text-stone-400 block mb-1">Имейл:</label>
+                                  <input
+                                    type="email"
+                                    value={editingEmail}
+                                    onChange={(e) => setEditingEmail(e.target.value)}
+                                    className="w-full bg-stone-900 border border-stone-800 text-stone-100 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-amber-500"
+                                    placeholder="email@example.com"
+                                  />
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="text-[10px] text-stone-400 block mb-1">Тип доставка:</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingDeliveryType('econt_office')}
+                                    className={`py-2 text-[11px] rounded-lg border font-semibold transition-all cursor-pointer ${
+                                      editingDeliveryType === 'econt_office'
+                                        ? 'bg-amber-600/20 border-amber-500 text-amber-300'
+                                        : 'bg-stone-900 border-stone-800 text-stone-400 hover:text-stone-300'
+                                    }`}
+                                  >
+                                    Офис на Еконт
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingDeliveryType('courier')}
+                                    className={`py-2 text-[11px] rounded-lg border font-semibold transition-all cursor-pointer ${
+                                      editingDeliveryType === 'courier'
+                                        ? 'bg-amber-600/20 border-amber-500 text-amber-300'
+                                        : 'bg-stone-900 border-stone-800 text-stone-400 hover:text-stone-300'
+                                    }`}
+                                  >
+                                    Адрес с куриер
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 gap-2">
+                                <div>
+                                  <label className="text-[10px] text-stone-400 block mb-1">Град:</label>
+                                  <input
+                                    type="text"
+                                    value={editingCity}
+                                    onChange={(e) => setEditingCity(e.target.value)}
+                                    className="w-full bg-stone-900 border border-stone-800 text-stone-100 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-amber-500"
+                                    placeholder="Град / Село"
+                                  />
+                                </div>
+
+                                {editingDeliveryType === 'econt_office' ? (
+                                  <div>
+                                    <label className="text-[10px] text-stone-400 block mb-1">Офис на Еконт:</label>
+                                    <input
+                                      type="text"
+                                      value={editingEcontOffice}
+                                      onChange={(e) => setEditingEcontOffice(e.target.value)}
+                                      className="w-full bg-stone-900 border border-stone-800 text-stone-100 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-amber-500"
+                                      placeholder="напр. офис Център, офис Изток..."
+                                    />
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <label className="text-[10px] text-stone-400 block mb-1">Точен адрес:</label>
+                                    <input
+                                      type="text"
+                                      value={editingAddress}
+                                      onChange={(e) => setEditingAddress(e.target.value)}
+                                      className="w-full bg-stone-900 border border-stone-800 text-stone-100 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-amber-500"
+                                      placeholder="ул. Име №, ет. Х, ап. Y..."
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
                           {/* 2. Списък с продукти */}
@@ -567,7 +758,7 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                               className="flex-1 py-3 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center justify-center gap-1 cursor-pointer shadow-lg shadow-amber-900/30"
                             >
                               <Check className="w-4 h-4" />
-                              <span>Запази промените (update)</span>
+                              <span>Запази промените</span>
                             </button>
                             <button
                               type="button"
@@ -632,7 +823,14 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                         <div className="grid grid-cols-3 gap-2 pt-2 border-t border-stone-800/80">
                           <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); handlePauseToggle(sub); }}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              if (sub.status === 'active') {
+                                handlePauseSub(sub);
+                              } else {
+                                handleResumeSub(sub);
+                              }
+                            }}
                             className="py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-semibold flex items-center justify-center gap-1 active:scale-95 cursor-pointer"
                           >
                             {sub.status === 'active' ? (
@@ -643,7 +841,7 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                             ) : (
                               <>
                                 <Play className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                                <span>Пусни</span>
+                                <span>Старт</span>
                               </>
                             )}
                           </button>
@@ -721,6 +919,135 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                 <span><strong className="text-stone-300">Сигурност:</strong> Заплащане изключително при доставка по Еконт на място (наложен платеж).</span>
               </li>
             </ul>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM CONFIRMATION MODAL ON CANCEL */}
+      {subToCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-[#1c1917] rounded-3xl border border-stone-800 shadow-2xl p-6 space-y-5 text-stone-200 text-center animate-in scale-in duration-250">
+            <div className="w-14 h-14 rounded-full bg-red-950/80 border border-red-500/40 text-red-400 flex items-center justify-center mx-auto shadow-lg shadow-red-950/50">
+              <Trash2 className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold font-display text-white">
+                Отказване на абонамент
+              </h3>
+              <p className="text-xs text-stone-300 max-w-xs mx-auto">
+                Искате ли да откажете абонамента?
+              </p>
+              <div className="p-2 rounded-xl bg-stone-950 border border-stone-900 font-mono text-[11px] text-amber-300">
+                Абонамент №: {subToCancel.subscriptionNumber}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={confirmCancelSub}
+                className="py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-colors cursor-pointer active:scale-95 shadow-md shadow-red-900/30"
+              >
+                Да
+              </button>
+              <button
+                type="button"
+                onClick={() => setSubToCancel(null)}
+                className="py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs transition-colors cursor-pointer active:scale-95"
+              >
+                Не
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM CONFIRMATION MODAL ON PAUSE */}
+      {subToPause && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-[#1c1917] rounded-3xl border border-stone-800 shadow-2xl p-6 space-y-5 text-stone-200 text-center animate-in scale-in duration-250">
+            <div className="w-14 h-14 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber-400 flex items-center justify-center mx-auto shadow-lg shadow-amber-950/50">
+              <Pause className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold font-display text-white">
+                Спиране на абонамент
+              </h3>
+              <p className="text-xs text-stone-300 max-w-xs mx-auto">
+                Искате ли да спрете абонамента си на пауза?
+              </p>
+              <div className="p-2 rounded-xl bg-stone-950 border border-stone-900 font-mono text-[11px] text-amber-300">
+                Абонамент №: {subToPause.subscriptionNumber}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={confirmPauseSub}
+                className="py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition-colors cursor-pointer active:scale-95 shadow-md shadow-amber-900/30"
+              >
+                Да
+              </button>
+              <button
+                type="button"
+                onClick={() => setSubToPause(null)}
+                className="py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs transition-colors cursor-pointer active:scale-95"
+              >
+                Не
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CUSTOM CONFIRMATION MODAL ON RESUME */}
+      {subToResume && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-[#1c1917] rounded-3xl border border-stone-800 shadow-2xl p-6 space-y-5 text-stone-200 text-center animate-in scale-in duration-250">
+            <div className="w-14 h-14 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-lg shadow-emerald-950/50">
+              <Play className="w-7 h-7 animate-pulse" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold font-display text-white">
+                Подновяване на абонамент
+              </h3>
+              <p className="text-xs text-stone-300 max-w-xs mx-auto">
+                Искате ли да подновите абонамента си?
+              </p>
+              <div className="p-2 rounded-xl bg-stone-950 border border-stone-900 font-mono text-[11px] text-amber-300">
+                Абонамент №: {subToResume.subscriptionNumber}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={confirmResumeSub}
+                className="py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors cursor-pointer active:scale-95 shadow-md shadow-emerald-900/30"
+              >
+                Да
+              </button>
+              <button
+                type="button"
+                onClick={() => setSubToResume(null)}
+                className="py-3 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs transition-colors cursor-pointer active:scale-95"
+              >
+                Не
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toastMessage && (
+        <div className="fixed bottom-24 left-4 right-4 z-50 flex justify-center animate-in fade-in slide-in-from-bottom duration-300">
+          <div className="bg-stone-900 border border-amber-500/50 text-amber-400 text-xs font-semibold rounded-2xl px-4 py-3 shadow-2xl flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>{toastMessage}</span>
           </div>
         </div>
       )}

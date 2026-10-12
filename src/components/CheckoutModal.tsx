@@ -102,6 +102,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         customer: deliveryDetails
       };
       recordToSend = {
+        action: "subscription",
         ...subRecord,
         orderType: "MONTHLY_RECURRING",
         selectedCoffees: items.map(it => ({
@@ -130,7 +131,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         status: 'Планирано изпичане',
         customer: deliveryDetails
       };
-      recordToSend = orderRecord;
+      recordToSend = {
+        action: "buy",
+        ...orderRecord,
+        selectedCoffees: items.map(it => ({
+          coffeeName: it.coffeeName,
+          size: it.size === '250g' ? '250g' : '1kg',
+          beansOrGround: it.grind === 'whole_bean' ? 'На зърна' : 'Смляно',
+          grindType: it.grind === 'whole_bean' ? 'Несмяно (на зърна)' : it.grindName,
+          quantity: it.quantity,
+          price: (it.unitPriceEur * it.quantity).toFixed(2)
+        }))
+      };
     }
 
     // 1. Изпращане на данните към Make.com Webhook

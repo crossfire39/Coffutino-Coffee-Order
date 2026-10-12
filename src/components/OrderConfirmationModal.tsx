@@ -36,7 +36,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
             {orderNum}
           </span>
           <h2 className="text-xl font-bold font-display text-white">
-            {isSubscription ? 'Абонаментът е активиран успешно!' : 'Поръчката е приета успешно!'}
+            {isSubscription ? 'Абонаментът е създаден успешно!' : 'Поръчката е приета успешно!'}
           </h2>
           <p className="text-xs text-stone-400 max-w-xs mx-auto">
             {isSubscription 
