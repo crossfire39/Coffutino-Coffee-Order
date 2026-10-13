@@ -68,7 +68,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto p-5 space-y-5 text-stone-200 no-scrollbar">
+        <div className="overflow-y-auto p-5 pb-32 space-y-5 text-stone-200 no-scrollbar">
           {/* Top Banner / Image */}
           <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-stone-800 bg-[#161413]">
             <img
