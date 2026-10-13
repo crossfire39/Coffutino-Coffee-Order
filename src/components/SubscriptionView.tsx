@@ -165,6 +165,12 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
   const saveEditing = () => {
     if (!editingSub) return;
     
+    const phoneRegex = /^0\d{9}$/;
+    if (!phoneRegex.test(editingPhone.trim())) {
+      showToast('Моля, въведете валиден телефонен номер (напр. 0887501112).');
+      return;
+    }
+    
     const subtotalEur = editingItems.reduce((sum, item) => sum + item.unitPriceEur * item.quantity, 0);
     const subtotalBgn = editingItems.reduce((sum, item) => sum + item.unitPriceBgn * item.quantity, 0);
 
@@ -390,7 +396,7 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                     required
                     value={phoneOrEmail}
                     onChange={(e) => setPhoneOrEmail(e.target.value)}
-                    placeholder="Телефон (+359...) или Имейл"
+                    placeholder="Телефон (088...) или Имейл"
                     className="flex-1 bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder:text-stone-600 focus:outline-none focus:border-amber-500"
                   />
                   <button
@@ -514,11 +520,12 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
                                 <div>
                                   <label className="text-[10px] text-stone-400 block mb-1">Телефон:</label>
                                   <input
-                                    type="text"
+                                    type="tel"
                                     value={editingPhone}
-                                    onChange={(e) => setEditingPhone(e.target.value)}
+                                    onChange={(e) => setEditingPhone(e.target.value.replace(/[^\d]/g, '').slice(0, 10))}
+                                    maxLength={10}
                                     className="w-full bg-stone-900 border border-stone-800 text-stone-100 text-xs rounded-lg px-2.5 py-2 focus:outline-none focus:border-amber-500"
-                                    placeholder="+359..."
+                                    placeholder="0887501112"
                                   />
                                 </div>
                                 <div>

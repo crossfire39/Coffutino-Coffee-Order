@@ -134,7 +134,7 @@ export default function App() {
           date: initialDate,
           deliveryType: 'courier',
           fullName: 'Александър Иванов',
-          phone: '+359 88 812 3456',
+          phone: '0888123456',
           email: 'alex@example.com',
           city: 'София',
           address: 'бул. Витоша 42, ет. 3',

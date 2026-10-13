@@ -56,6 +56,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       setFormError('Моля, попълнете вашите три имена и телефонен номер.');
       return;
     }
+    const phoneRegex = /^0\d{9}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      setFormError('Моля, въведете валиден телефонен номер (напр. 0887501112).');
+      return;
+    }
     if (deliveryType === 'courier' && (!city.trim() || !address.trim())) {
       setFormError('Моля, попълнете град и точен адрес за доставка.');
       return;
@@ -325,8 +330,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   type="tel"
                   required
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+359 88..."
+                  onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g, '').slice(0, 10))}
+                  placeholder="0887501112"
+                  maxLength={10}
                   className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-100 placeholder:text-stone-600 focus:outline-none focus:border-amber-500"
                 />
               </div>
