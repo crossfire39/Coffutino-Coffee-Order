@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CoffeeSort, CoffeeSize, GrindId } from '../types';
 import { GRIND_OPTIONS } from '../data/coffeeData';
-import { X, Sparkles, Check, ChevronRight, Mountain, ShieldCheck, Scale } from 'lucide-react';
+import { X, Sparkles, Check, ChevronRight, Mountain, ShieldCheck, Scale, ArrowLeft } from 'lucide-react';
 
 interface CoffeeDetailModalProps {
   coffee: CoffeeSort | null;
@@ -40,18 +40,29 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-md transition-all animate-in fade-in duration-200">
       <div
-        className="w-full max-w-lg bg-[#181615] rounded-t-[32px] sm:rounded-3xl border border-stone-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+        className="w-full max-w-lg bg-[#181615] rounded-t-[32px] sm:rounded-3xl border border-stone-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {/* iOS Drag Handle */}
-        <div className="w-full pt-3 pb-1 flex justify-center sm:hidden">
+        <div className="w-full pt-3 pb-1 flex justify-center sm:hidden shrink-0">
           <div className="w-10 h-1.5 bg-stone-700 rounded-full" />
         </div>
 
-        {/* Modal Header */}
-        <div className="px-5 py-3 border-b border-stone-800/80 flex items-center justify-between">
+        {/* Sticky Top Header Bar with Back and Close */}
+        <div className="sticky top-0 z-20 bg-[#181615]/95 backdrop-blur-md px-5 py-3 border-b border-stone-800/80 flex items-center justify-between shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex items-center gap-1.5 text-xs font-semibold text-stone-300 hover:text-white transition-colors cursor-pointer bg-stone-800/80 hover:bg-stone-800 px-3 py-1.5 rounded-xl border border-stone-700/60 shadow-sm"
+            aria-label="Назад"
+          >
+            <ArrowLeft className="w-4 h-4 text-amber-400" />
+            <span>Назад</span>
+          </button>
+
           <div className="flex items-center gap-2">
-            <span className="text-xl">{coffee.flag}</span>
+            <span className="text-lg">{coffee.flag}</span>
             <span className="text-xs uppercase tracking-wider font-semibold text-amber-400">
               {coffee.originBg}
             </span>
@@ -60,15 +71,22 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center text-stone-400 hover:text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center text-stone-400 hover:text-white transition-colors cursor-pointer shadow-sm"
             aria-label="Затвори"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="overflow-y-auto p-5 pb-32 space-y-5 text-stone-200 no-scrollbar">
+        {/* Scrollable Content with hidden scrollbar */}
+        <div 
+          className="overflow-y-auto p-5 pb-36 space-y-5 text-stone-200"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
           {/* Top Banner / Image */}
           <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-stone-800 bg-[#161413]">
             <img
@@ -299,13 +317,13 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Долен фиксиран панел за покупка */}
-        <div className="p-4 bg-[#141211] border-t border-stone-800 flex items-center justify-between gap-4">
+        {/* Долен фиксиран панел за покупка (Добави в количката) */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-[#141211]/95 backdrop-blur-md border-t border-stone-800 flex items-center justify-between gap-4 z-30 shadow-2xl pb-[calc(1rem+env(safe-area-inset-bottom,16px))]">
           <div>
             <span className="text-[11px] text-stone-400 block">
-              {size === '250g' ? '250г' : '1кг'} · {selectedGrindObj.nameBg}
+              {size === '250g' ? 'Пакет 250г' : 'Пакет 1кг'} · {selectedGrindObj.nameBg}
             </span>
-            <div className="text-xl font-bold font-mono text-amber-300">
+            <div className="text-lg font-bold font-mono text-amber-300">
               {price.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}
             </div>
           </div>
@@ -326,7 +344,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
               </>
             ) : (
               <>
-                <span>Добави в количката</span>
+                <span>Добави в количката — {price.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}</span>
                 <ChevronRight className="w-4 h-4" />
               </>
             )}
