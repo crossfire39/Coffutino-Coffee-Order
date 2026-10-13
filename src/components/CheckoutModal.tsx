@@ -217,7 +217,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         </div>
 
         {/* Формуляр */}
-        <form onSubmit={handleSubmitOrder} className="overflow-y-auto p-5 pb-32 space-y-5 text-stone-200 no-scrollbar">
+        <form onSubmit={handleSubmitOrder} className="overflow-y-auto p-5 pb-[calc(6rem+env(safe-area-inset-bottom,16px))] space-y-5 text-stone-200 no-scrollbar">
           {formError && (
             <div className="p-3 rounded-xl bg-red-950/50 border border-red-800 text-xs text-red-200 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
@@ -571,8 +571,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             )}
           </div>
 
-          {/* Бутон за изпращане в стикнат футър */}
-          <div className="sticky bottom-0 bg-[#181615] pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] border-t border-stone-800 z-20 shadow-2xl mt-6 -mx-5 -mb-5 px-5">
+          {/* Бутон за изпращане в нормалния скрол поток */}
+          <div className="pt-4 space-y-1.5">
             <button
               type="submit"
               disabled={isSubmitting}
