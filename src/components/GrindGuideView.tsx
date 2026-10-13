@@ -41,7 +41,7 @@ export const GrindGuideView: React.FC<GrindGuideViewProps> = ({
   const recommendedCoffees = getRecommendedCoffees(selectedGrindId);
 
   return (
-    <div className="p-4 space-y-6 pb-24">
+    <div className="p-4 space-y-6 pb-40">
       {/* Банер за наръчника по смилане */}
       <div className="relative rounded-2xl overflow-hidden border border-stone-800 bg-stone-900">
         <img

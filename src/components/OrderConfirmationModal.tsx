@@ -173,8 +173,8 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
           </div>
         </div>
 
-        {/* Бутони */}
-        <div className="space-y-2 pt-2">
+        {/* Бутони в залепен футър */}
+        <div className="sticky bottom-0 bg-[#181615] pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-stone-800/80 z-20 space-y-2 shadow-2xl mt-4 -mx-6 -mb-6 px-6">
           {isSubscription ? (
             <button
               type="button"
@@ -182,7 +182,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
                 onClose();
                 if (onViewSubscription) onViewSubscription();
               }}
-              className="w-full min-h-[46px] rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+              className="w-full min-h-[48px] rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
             >
               <span>Управление на моята абонаментна поръчка</span>
               <ArrowRight className="w-4 h-4" />
@@ -194,7 +194,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
                 onClose();
                 onViewOrders();
               }}
-              className="w-full min-h-[46px] rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+              className="w-full min-h-[48px] rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
             >
               <span>Виж в Моите поръчки</span>
               <ArrowRight className="w-4 h-4" />
@@ -204,7 +204,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full min-h-[44px] rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs active:scale-95 cursor-pointer"
+            className="w-full min-h-[46px] rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-semibold text-xs active:scale-95 cursor-pointer"
           >
             Продължи към кафетата
           </button>

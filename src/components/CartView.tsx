@@ -69,7 +69,7 @@ export const CartView: React.FC<CartViewProps> = ({
   }
 
   return (
-    <div className="p-4 space-y-4 pb-36">
+    <div className="p-4 space-y-4 pb-40">
       {/* Заглавна част */}
       <div className="flex items-center justify-between">
         <div>

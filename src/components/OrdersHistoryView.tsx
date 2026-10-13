@@ -41,7 +41,7 @@ export const OrdersHistoryView: React.FC<OrdersHistoryViewProps> = ({
   }
 
   return (
-    <div className="p-4 space-y-5 pb-28">
+    <div className="p-4 space-y-5 pb-40">
       {/* Заглавие */}
       <div className="flex items-center justify-between">
         <div>

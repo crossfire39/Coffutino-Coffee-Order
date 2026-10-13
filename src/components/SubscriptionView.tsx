@@ -354,7 +354,7 @@ export const SubscriptionView: React.FC<SubscriptionViewProps> = ({
   };
 
   return (
-    <div className="p-4 space-y-6 pb-28">
+    <div className="p-4 space-y-6 pb-40">
       {/* HEADER BANNER */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-stone-900 via-amber-950/30 to-stone-900 border border-amber-600/30 space-y-2">
         <div className="flex items-center gap-2">

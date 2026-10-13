@@ -119,7 +119,7 @@ export const IPhoneFrame: React.FC<IPhoneFrameProps> = ({
 
           {/* App Scrollable Content Canvas */}
           <div 
-            className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative pb-32"
+            className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative pb-40"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
             {children}
