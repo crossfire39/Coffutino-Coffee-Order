@@ -2,6 +2,7 @@ import React from 'react';
 import { ShoppingBag } from 'lucide-react';
 import { COFFUTINO_LOGO } from '../data/coffeeData';
 import { PWAInstallButton } from './PWAInstallButton';
+import { APP_VERSION } from '../config';
 
 interface TopNavbarProps {
   cartCount: number;
@@ -14,20 +15,25 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#161413]/95 backdrop-blur-md px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top))] border-b border-stone-800/80 flex items-center justify-between transition-colors">
-      {/* Zone 1: Лого и име КОФУТИНО ЕООД */}
-      <div className="flex items-center gap-2.5 min-w-0">
+      {/* Zone 1: Лого и име КОФУТИНО ЕООД с версия */}
+      <div className="flex items-center gap-2 min-w-0">
         <img
           src={COFFUTINO_LOGO}
           alt="КОФУТИНО ЕООД"
           referrerPolicy="no-referrer"
           className="w-7 h-7 object-contain rounded-md shrink-0"
         />
-        <a
-          href="#home"
-          className="text-base sm:text-lg font-bold tracking-wider uppercase text-amber-100 hover:text-amber-200 transition-colors font-display truncate"
-        >
-          КОФУТИНО ЕООД
-        </a>
+        <div className="flex flex-col min-w-0">
+          <a
+            href="#home"
+            className="text-sm sm:text-base font-bold tracking-wider uppercase text-amber-100 hover:text-amber-200 transition-colors font-display truncate leading-tight"
+          >
+            КОФУТИНО ЕООД
+          </a>
+          <span className="text-[10px] text-amber-400/80 font-mono tracking-wider">
+            {APP_VERSION}
+          </span>
+        </div>
       </div>
 
       {/* Zone 2: Бутон за инсталиране, Валута Евро и Количка */}

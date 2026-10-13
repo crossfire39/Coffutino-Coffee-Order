@@ -31,10 +31,11 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
   const handleAdd = () => {
     onAddToCart(coffee, size, grind);
     setAdded(true);
+    alert('Кафето беше добавено в количката!');
     setTimeout(() => {
       setAdded(false);
       onClose();
-    }, 900);
+    }, 500);
   };
 
   return (
@@ -344,7 +345,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
               </>
             ) : (
               <>
-                <span>Добави в количката — {price.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}</span>
+                <span>🛒 Добави в количката — {price.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}</span>
                 <ChevronRight className="w-4 h-4" />
               </>
             )}

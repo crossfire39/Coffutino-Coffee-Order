@@ -19,7 +19,7 @@ export const IOSInstallGuideModal: React.FC<IOSInstallGuideModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm bg-[#1c1917] rounded-3xl border border-stone-800 shadow-2xl p-5 text-stone-200 space-y-4 relative animate-in slide-in-from-bottom-4 duration-250"
+        className="w-full max-w-sm bg-[#1c1917] rounded-3xl border border-stone-800 shadow-2xl p-5 text-stone-200 space-y-4 relative animate-in slide-in-from-bottom-4 duration-250 max-h-[85vh] overflow-y-auto mb-24"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Бутон за затваряне */}
