@@ -179,7 +179,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md transition-all animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md transition-all animate-in fade-in duration-200">
       <div
         className="w-full max-w-lg bg-[#181615] rounded-t-[32px] sm:rounded-3xl border border-stone-800 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -212,7 +212,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         </div>
 
         {/* Формуляр */}
-        <form onSubmit={handleSubmitOrder} className="overflow-y-auto p-5 space-y-5 text-stone-200 no-scrollbar">
+        <form onSubmit={handleSubmitOrder} className="overflow-y-auto p-5 pb-32 space-y-5 text-stone-200 no-scrollbar">
           {formError && (
             <div className="p-3 rounded-xl bg-red-950/50 border border-red-800 text-xs text-red-200 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
@@ -565,8 +565,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             )}
           </div>
 
-          {/* Бутон за изпращане */}
-          <div className="pt-2">
+          {/* Бутон за изпращане в стикнат футър */}
+          <div className="sticky bottom-0 bg-[#181615] pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] border-t border-stone-800 z-20 shadow-2xl mt-6 -mx-5 -mb-5 px-5">
             <button
               type="submit"
               disabled={isSubmitting}

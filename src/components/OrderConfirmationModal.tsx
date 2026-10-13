@@ -22,7 +22,7 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
   const orderNum = isSubscription ? (order as CoffeeSubscription).subscriptionNumber : (order as OrderRecord).orderNumber;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div
         className="w-full max-w-md bg-[#181615] rounded-3xl border border-stone-800 shadow-2xl p-6 space-y-5 text-stone-200 max-h-[90vh] overflow-y-auto no-scrollbar"
         onClick={(e) => e.stopPropagation()}
