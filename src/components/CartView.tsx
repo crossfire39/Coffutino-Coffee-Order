@@ -320,7 +320,7 @@ export const CartView: React.FC<CartViewProps> = ({
         <button
           type="button"
           onClick={onProceedToCheckout}
-          className="w-full min-h-[50px] rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-xl shadow-amber-900/30 active:scale-[0.98] cursor-pointer"
+          className="w-full min-h-[50px] rounded-2xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-xl shadow-red-900/40 active:scale-[0.98] cursor-pointer"
         >
           <span>
             {orderType === 'subscription' ? 'Продължи към абонаментна заявка' : 'Продължи към заявка за поръчка'}

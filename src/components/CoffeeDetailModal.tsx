@@ -258,7 +258,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
             className={`min-h-[48px] px-6 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer ${
               added
                 ? 'bg-emerald-600 text-white'
-                : 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-900/30'
+                : 'bg-red-600 hover:bg-red-500 text-white shadow-red-900/40'
             }`}
           >
             {added ? (

@@ -576,7 +576,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full min-h-[50px] rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-60 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer"
+              className="w-full min-h-[50px] rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-red-900/40 active:scale-95 cursor-pointer"
             >
               {isSubmitting ? (
                 <span>Генериране и изпращане на абонамента...</span>
