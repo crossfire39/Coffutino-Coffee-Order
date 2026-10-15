@@ -41,7 +41,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md transition-all animate-in fade-in duration-200">
       <div
-        className="w-full max-w-lg bg-[#181615] rounded-t-[32px] sm:rounded-3xl border border-stone-800 shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden relative"
+        className="w-full max-w-lg bg-[#181615] rounded-t-[32px] sm:rounded-3xl border border-stone-800 shadow-2xl flex flex-col h-[100dvh] sm:h-[85vh] sm:max-h-[85vh] overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
@@ -238,10 +238,10 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           </div>
         </div>
 
-                {/* Floating Sticky Bottom Action Bar */}
+        {/* Sticky Bottom Action Bar */}
         <div 
-          className="absolute bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 p-4 flex items-center justify-between gap-4 z-40 shadow-2xl"
-          style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 20px))' }}
+          className="sticky bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 p-4 flex items-center justify-between gap-4 z-40 shrink-0 shadow-2xl"
+          style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 24px))' }}
         >
           <div>
             <span className="text-[11px] text-stone-400 block font-medium">
