@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CoffeeSort, CoffeeSize, GrindId } from '../types';
 import { GRIND_OPTIONS } from '../data/coffeeData';
-import { X, Sparkles, Check, ChevronRight, Mountain, ShieldCheck, Scale, ArrowLeft } from 'lucide-react';
+import { X, Sparkles, Check, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface CoffeeDetailModalProps {
   coffee: CoffeeSort | null;
@@ -39,9 +39,9 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/75 backdrop-blur-md transition-all animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md transition-all animate-in fade-in duration-200">
       <div
-        className="w-full max-w-lg bg-[#181615] rounded-t-[32px] sm:rounded-3xl border border-stone-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden relative"
+        className="w-full max-w-lg bg-[#181615] rounded-t-[32px] sm:rounded-3xl border border-stone-800 shadow-2xl flex flex-col h-[90dvh] sm:h-auto sm:max-h-[85vh] overflow-hidden relative"
         onClick={(e) => e.stopPropagation()}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
@@ -50,8 +50,8 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           <div className="w-10 h-1.5 bg-stone-700 rounded-full" />
         </div>
 
-        {/* Sticky Top Header Bar with Back and Close */}
-        <div className="sticky top-0 z-20 bg-[#181615]/95 backdrop-blur-md px-5 py-3 border-b border-stone-800/80 flex items-center justify-between shrink-0">
+        {/* Sticky Top Header Bar with Back and Close (Safe Area Top Padding for Dynamic Island) */}
+        <div className="sticky top-0 z-30 bg-[#181615] backdrop-blur-md px-5 pt-[calc(env(safe-area-inset-top,16px)+0.75rem)] pb-3 border-b border-stone-800/80 flex items-center justify-between shrink-0 shadow-sm">
           <button
             type="button"
             onClick={onClose}
@@ -81,7 +81,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
 
         {/* Scrollable Content with hidden scrollbar */}
         <div 
-          className="overflow-y-auto p-5 pb-36 space-y-5 text-stone-200"
+          className="flex-1 overflow-y-auto p-5 space-y-6 text-stone-200"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -89,7 +89,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           }}
         >
           {/* Top Banner / Image */}
-          <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-stone-800 bg-[#161413]">
+          <div className="relative h-56 w-full rounded-2xl overflow-hidden border border-stone-800 bg-[#161413] shadow-md">
             <img
               src={coffee.image}
               alt={coffee.name}
@@ -104,7 +104,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
                   {coffee.subnameBg}
                 </p>
               </div>
-              <div className="px-3 py-1 rounded-xl bg-amber-950/80 backdrop-blur-md border border-amber-500/40 text-xs font-bold text-amber-300 flex items-center gap-1">
+              <div className="px-3 py-1 rounded-xl bg-amber-950/80 backdrop-blur-md border border-amber-500/40 text-xs font-bold text-amber-300 flex items-center gap-1 shadow">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>SCA {coffee.scaScore.toFixed(1)}</span>
               </div>
@@ -112,15 +112,15 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           </div>
 
           {/* Вкусов профил и нотки */}
-          <div>
-            <h4 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400">
               Вкусов профил и нотки
-            </h4>
-            <div className="flex flex-wrap gap-1.5">
-              {coffee.tastingNotesBg.map((note, i) => (
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {coffee.tastingNotesBg.map((note, index) => (
                 <span
-                  key={i}
-                  className="px-2.5 py-1 rounded-lg bg-amber-950/40 text-amber-200 border border-amber-700/40 text-xs font-medium"
+                  key={index}
+                  className="px-3 py-1.5 rounded-xl bg-stone-900 border border-amber-500/30 text-xs text-amber-200/90 font-medium shadow-sm"
                 >
                   {note}
                 </span>
@@ -129,178 +129,98 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           </div>
 
           {/* Описание */}
-          <p className="text-sm leading-relaxed text-stone-300 bg-stone-900/60 p-3.5 rounded-xl border border-stone-800/80">
+          <div className="p-4 rounded-2xl bg-stone-900/80 border border-stone-800 text-sm text-stone-300 leading-relaxed shadow-inner">
             {coffee.descriptionBg}
-          </p>
-
-          {/* Характеристики на произхода */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-3 rounded-xl bg-stone-900/80 border border-stone-800">
-              <span className="text-stone-400 block mb-1 flex items-center gap-1">
-                <Mountain className="w-3.5 h-3.5 text-amber-500" />
-                Надморска височина
-              </span>
-              <span className="font-semibold text-stone-200">{coffee.altitude}</span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-stone-900/80 border border-stone-800">
-              <span className="text-stone-400 block mb-1 flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                Обработка
-              </span>
-              <span className="font-semibold text-stone-200">
-                {coffee.processBg}
-              </span>
-            </div>
           </div>
 
-          {/* Сензорен баланс */}
-          <div className="p-3.5 rounded-xl bg-stone-900/80 border border-stone-800 space-y-2.5 text-xs">
-            <h4 className="font-semibold text-stone-300">
-              Сензорен баланс
-            </h4>
-            
-            {/* Киселинност */}
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-stone-400">Киселинност</span>
-                <span className="text-stone-300 font-mono">{coffee.acidity}/5</span>
-              </div>
-              <div className="w-full bg-stone-800 h-2 rounded-full overflow-hidden">
-                <div
-                  className="bg-amber-500 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${(coffee.acidity / 5) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Тяло / Плътност */}
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-stone-400">Тяло / Плътност</span>
-                <span className="text-stone-300 font-mono">{coffee.body}/5</span>
-              </div>
-              <div className="w-full bg-stone-800 h-2 rounded-full overflow-hidden">
-                <div
-                  className="bg-amber-600 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${(coffee.body / 5) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Сладост */}
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-stone-400">Сладост</span>
-                <span className="text-stone-300 font-mono">{coffee.sweetness}/5</span>
-              </div>
-              <div className="w-full bg-stone-800 h-2 rounded-full overflow-hidden">
-                <div
-                  className="bg-amber-400 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${(coffee.sweetness / 5) * 100}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ИЗБОР НА ГРАМАЖ (250г или 1кг) */}
-          <div>
-            <h4 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2 flex items-center justify-between">
-              <span>Изберете грамаж</span>
-              <span className="text-[11px] text-amber-400 font-normal">
-                Запечатано с ароматна клапа
-              </span>
-            </h4>
+          {/* Избор на грамаж (250g / 1kg) */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400 flex items-center gap-1.5">
+              <span>Избери разфасовка</span>
+            </h3>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setSize('250g')}
-                className={`p-3.5 rounded-xl border text-left transition-all relative cursor-pointer ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   size === '250g'
-                    ? 'bg-amber-950/40 border-amber-500 text-white shadow-md'
-                    : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200'
+                    ? 'bg-amber-600/20 border-amber-500 text-white shadow-md shadow-amber-950/50'
+                    : 'bg-stone-900 border-stone-800 text-stone-400 hover:border-stone-700'
                 }`}
               >
-                <div className="font-bold text-base text-stone-100 flex items-center justify-between">
-                  <span>Пакет 250г</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-sm text-stone-100">Пакет 250г</span>
                   {size === '250g' && <Check className="w-4 h-4 text-amber-400" />}
                 </div>
-                <div className="text-xs text-stone-400 mt-1">
-                  Стандартен пакет · ~15 чаши кафе
+                <div className="text-base font-bold font-mono text-amber-300">
+                  {currency === 'EUR' ? `${coffee.price250g.toFixed(2)} €` : `${coffee.price250gBgn.toFixed(2)} лв`}
                 </div>
-                <div className="text-sm font-bold text-amber-300 font-mono mt-2">
-                  {(currency === 'EUR' ? coffee.price250g : coffee.price250gBgn).toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}
-                </div>
+                <span className="text-[11px] text-stone-400 block mt-0.5">Стандартен пакет</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSize('1kg')}
-                className={`p-3.5 rounded-xl border text-left transition-all relative cursor-pointer ${
+                className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   size === '1kg'
-                    ? 'bg-amber-950/40 border-amber-500 text-white shadow-md'
-                    : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200'
+                    ? 'bg-amber-600/20 border-amber-500 text-white shadow-md shadow-amber-950/50'
+                    : 'bg-stone-900 border-stone-800 text-stone-400 hover:border-stone-700'
                 }`}
               >
-                <div className="font-bold text-base text-stone-100 flex items-center justify-between">
-                  <span>Пакет 1кг</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-sm text-stone-100">Пакет 1 кг</span>
                   {size === '1kg' && <Check className="w-4 h-4 text-amber-400" />}
                 </div>
-                <div className="text-xs text-stone-400 mt-1">
-                  Голям пакет · ~65 чаши кафе
+                <div className="text-base font-bold font-mono text-amber-300">
+                  {currency === 'EUR' ? `${coffee.price1kg.toFixed(2)} €` : `${coffee.price1kgBgn.toFixed(2)} лв`}
                 </div>
-                <div className="text-sm font-bold text-amber-300 font-mono mt-2">
-                  {(currency === 'EUR' ? coffee.price1kg : coffee.price1kgBgn).toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}
-                </div>
+                <span className="text-[11px] text-amber-400 font-medium block mt-0.5">Икономична опаковка</span>
               </button>
             </div>
           </div>
 
-          {/* ИЗБОР НА СМИЛАНЕ */}
-          <div>
-            <h4 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">
-              Как да смелим кафето?
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {GRIND_OPTIONS.map((g) => {
-                const isSelected = grind === g.id;
+          {/* Избор на смилане */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+              Смилане на кафето
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {GRIND_OPTIONS.map((opt) => {
+                const isSelected = grind === opt.id;
                 return (
                   <button
-                    key={g.id}
+                    key={opt.id}
                     type="button"
-                    onClick={() => setGrind(g.id)}
-                    className={`p-3 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                    onClick={() => setGrind(opt.id as GrindId)}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-3 ${
                       isSelected
-                        ? 'bg-amber-950/50 border-amber-500 text-amber-100'
-                        : 'bg-stone-900/60 border-stone-800 text-stone-400 hover:text-stone-200'
+                        ? 'bg-amber-600/20 border-amber-500 text-white shadow'
+                        : 'bg-stone-900 border-stone-800 text-stone-300 hover:border-stone-700'
                     }`}
                   >
-                    <div className="font-semibold text-stone-200 flex items-center justify-between">
-                      <span>{g.nameBg}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-amber-400" />}
-                    </div>
-                    <div className="text-[11px] text-stone-400 mt-0.5">
-                      {g.subBg}
+                    <span className="text-xl mt-0.5">☕</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-xs text-stone-100">{opt.nameBg}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                      </div>
+                      <p className="text-[11px] text-stone-400 mt-0.5 leading-tight">{opt.descriptionBg}</p>
                     </div>
                   </button>
                 );
               })}
             </div>
+          </div>
 
-            {/* Детайли за избраното смилане */}
-            <div className="mt-2.5 p-3 rounded-xl bg-amber-950/20 border border-amber-700/30 text-xs text-amber-200/90 flex items-start gap-2.5">
-              <Scale className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold text-amber-300">
-                  {selectedGrindObj.brewMethodBg}:
-                </span>{' '}
-                <span>
-                  {selectedGrindObj.descriptionBg}
-                </span>
-                <span className="block mt-1 text-[11px] text-stone-400">
-                  Препоръчителна доза: {selectedGrindObj.recommendedRatio} · {selectedGrindObj.waterTemp}
-                </span>
-              </div>
+          {/* Детайли за кафето */}
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="p-3 rounded-xl bg-stone-900 border border-stone-800">
+              <span className="text-stone-400 block text-[11px]">Надморска височина</span>
+              <span className="font-semibold text-stone-200">{coffee.altitude}</span>
+            </div>
+            <div className="p-3 rounded-xl bg-stone-900 border border-stone-800">
+              <span className="text-stone-400 block text-[11px]">Обработка</span>
+              <span className="font-semibold text-stone-200">{coffee.processBg}</span>
             </div>
           </div>
 
@@ -318,10 +238,10 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Долен фиксиран панел за покупка (Добави в количката) */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-[#141211]/95 backdrop-blur-md border-t border-stone-800 flex items-center justify-between gap-4 z-30 shadow-2xl pb-[calc(1rem+env(safe-area-inset-bottom,16px))]">
+        {/* Долен фиксиран панел за покупка (Добави в количката) - Неабсолютен футер със безопасна зона */}
+        <div className="shrink-0 bg-[#141211] border-t border-stone-800 p-4 flex items-center justify-between gap-4 z-30 shadow-2xl pb-[calc(1.25rem+env(safe-area-inset-bottom,20px))]">
           <div>
-            <span className="text-[11px] text-stone-400 block">
+            <span className="text-[11px] text-stone-400 block font-medium">
               {size === '250g' ? 'Пакет 250г' : 'Пакет 1кг'} · {selectedGrindObj.nameBg}
             </span>
             <div className="text-lg font-bold font-mono text-amber-300">
