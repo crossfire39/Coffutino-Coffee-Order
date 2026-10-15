@@ -30,9 +30,35 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           >
             КОФУТИНО ЕООД
           </a>
-          <span className="text-[10px] text-amber-400/80 font-mono tracking-wider">
-            {APP_VERSION}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-amber-400/80 font-mono tracking-wider">
+              {APP_VERSION}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    for (const reg of registrations) {
+                      reg.unregister();
+                    }
+                  });
+                }
+                if ('caches' in window) {
+                  caches.keys().then((names) => {
+                    for (const name of names) {
+                      caches.delete(name);
+                    }
+                  });
+                }
+                window.location.reload();
+              }}
+              className="text-[10px] text-amber-300 hover:text-amber-100 underline font-mono cursor-pointer"
+              title="Изчисти кеша и зареди най-новата версия"
+            >
+              • Обнови
+            </button>
+          </div>
         </div>
       </div>
 

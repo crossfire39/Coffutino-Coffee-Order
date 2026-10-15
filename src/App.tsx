@@ -18,9 +18,35 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { OrderConfirmationModal } from './components/OrderConfirmationModal';
 import { OrdersHistoryView } from './components/OrdersHistoryView';
 import { PWAInstallButton } from './components/PWAInstallButton';
+import { APP_VERSION } from './config';
 import { Calendar, Coffee, Flame, ExternalLink, Repeat } from 'lucide-react';
 
 export default function App() {
+  // Автоматично обновяване при промяна на версията (изчистване на кеш и Service Worker)
+  useEffect(() => {
+    const savedVersion = localStorage.getItem('coffutino_app_version');
+    if (savedVersion && savedVersion !== APP_VERSION) {
+      localStorage.setItem('coffutino_app_version', APP_VERSION);
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const reg of registrations) {
+            reg.unregister();
+          }
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          for (const name of names) {
+            caches.delete(name);
+          }
+        });
+      }
+      window.location.reload();
+    } else if (!savedVersion) {
+      localStorage.setItem('coffutino_app_version', APP_VERSION);
+    }
+  }, []);
+
   // Навигация и състояние (валута: евро)
   const [activeTab, setActiveTab] = useState<AppTab>('sorts');
   const currency: 'EUR' = 'EUR';
