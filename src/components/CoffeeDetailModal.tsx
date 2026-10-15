@@ -81,7 +81,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
 
         {/* Scrollable Content with hidden scrollbar */}
         <div 
-          className="flex-1 overflow-y-auto p-5 space-y-6 text-stone-200"
+          className="flex-1 overflow-y-auto p-5 space-y-6 text-stone-200 pb-36"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -238,11 +238,14 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Долен фиксиран панел за покупка (Добави в количката) - Неабсолютен футер със безопасна зона */}
-        <div className="shrink-0 bg-[#141211] border-t border-stone-800 p-4 flex items-center justify-between gap-4 z-30 shadow-2xl pb-[calc(1.25rem+env(safe-area-inset-bottom,20px))]">
+                {/* Floating Sticky Bottom Action Bar */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 p-4 flex items-center justify-between gap-4 z-40 shadow-2xl"
+          style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 20px))' }}
+        >
           <div>
             <span className="text-[11px] text-stone-400 block font-medium">
-              {size === '250g' ? 'Пакет 250г' : 'Пакет 1кг'} · {selectedGrindObj.nameBg}
+              {size === '250g' ? 'Пакет 250g' : 'Пакет 1kg'} · {selectedGrindObj.nameBg}
             </span>
             <div className="text-lg font-bold font-mono text-amber-300">
               {price.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}
@@ -265,8 +268,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
               </>
             ) : (
               <>
-                <span>🛒 Добави в количката — {price.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'}</span>
-                <ChevronRight className="w-4 h-4" />
+                <span>🛒 Добави в количката — {price.toFixed(2)} {currency === 'EUR' ? '€' : 'лв'} &gt;</span>
               </>
             )}
           </button>
