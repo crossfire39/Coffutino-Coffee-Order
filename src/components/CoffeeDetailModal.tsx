@@ -83,6 +83,7 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
         <div 
           className="flex-1 overflow-y-auto p-5 space-y-6 text-stone-200 pb-36"
           style={{
+            paddingBottom: '9rem',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch'
@@ -238,10 +239,16 @@ export const CoffeeDetailModal: React.FC<CoffeeDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Sticky Bottom Action Bar */}
+        {/* Floating Action Bar ABOVE Bottom Navigation */}
         <div 
-          className="sticky bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 p-4 flex items-center justify-between gap-4 z-40 shrink-0 shadow-2xl"
-          style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 24px))' }}
+          className="fixed left-0 right-0 z-[60] bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 p-4 flex items-center justify-between gap-4 shadow-2xl max-w-lg mx-auto"
+          style={{
+            position: 'fixed',
+            bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 16px))',
+            left: 0,
+            right: 0,
+            zIndex: 60
+          }}
         >
           <div>
             <span className="text-[11px] text-stone-400 block font-medium">
